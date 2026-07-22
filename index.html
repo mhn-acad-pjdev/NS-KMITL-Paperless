@@ -1,429 +1,1297 @@
+```html
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบันทึกทางการพยาบาล และ eMAR (Smart Nursing Record System)</title>
+    <title>ระบบจำลอง IPD Paperless HIS, LIS & PACS - คณะพยาบาลศาสตร์ สจล.</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Prompt -->
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chart.js -->
+    <!-- Chart.js for Graphic Sheet -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body { font-family: 'Prompt', sans-serif; }
+    <!-- Google Fonts Prompt -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style> 
+        body { font-family: 'Prompt', sans-serif; } 
+        .pacs-viewer { background-color: #050505; }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col">
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
 
-    <!-- Top Navigation Header -->
-    <header class="bg-teal-700 text-white shadow-lg sticky top-0 z-50">
+    <!-- Header Navigation -->
+    <header class="bg-teal-700 text-white shadow-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <i class="fa-solid fa-hospital-user text-2xl text-teal-200"></i>
-                <h1 class="text-xl font-bold tracking-wide">Smart Nurse eMAR & Focus Note</h1>
+            <div class="flex items-center space-x-3">
+                <div class="bg-white text-teal-700 p-2 rounded-lg font-bold text-xl flex items-center justify-center w-10 h-10 shadow">
+                    <i class="fa-solid font-bold fa-user-nurse"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">IPD Paperless HIS, LIS & PACS Simulation</h1>
+                    <p class="text-xs text-teal-200">สื่อการเรียนการสอน คณะพยาบาลศาสตร์ สจล. (KMITL Nursing)</p>
+                </div>
             </div>
-            <div class="flex items-center gap-4 text-sm">
-                <span class="bg-teal-800/80 px-3 py-1.5 rounded-full border border-teal-600">
-                    <i class="fa-solid fa-user-nurse mr-1 text-teal-300"></i> พว. สมหญิง (พยาบาลประจำการ)
-                </span>
-                <span class="text-teal-200 hidden md:inline"><i class="fa-regular fa-calendar-alt mr-1"></i> หอผู้ป่วยอายุรกรรม หญิง</span>
+            <div class="flex items-center space-x-4 text-sm">
+                <div class="hidden sm:block text-right">
+                    <span class="block font-medium">พว. สมหญิง มีสุข (RN)</span>
+                    <span class="text-xs text-teal-200">Ward: หอผู้ป่วยสามัญชาย 1 (Male 1)</span>
+                </div>
+                <div class="bg-teal-800 px-3 py-1.5 rounded-full text-xs flex items-center gap-2 border border-teal-600">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>เชื่อมต่อ HIS / LIS / PACS ออนไลน์</span>
+                </div>
             </div>
         </div>
     </header>
 
-    <!-- Main Container -->
-    <main class="max-w-7xl mx-auto w-full px-4 py-6 flex-grow grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 flex flex-col md:flex-row gap-4">
 
-        <!-- Sidebar: Patient Selector -->
-        <aside class="lg:col-span-1 space-y-4">
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
-                <h2 class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-3">
-                    <i class="fa-solid fa-bed mr-1"></i> รายชื่อผู้ป่วยในเตียง
+        <!-- Sidebar / Patient List Dashboard -->
+        <aside class="w-full md:w-80 bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
+            <div class="p-3 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                <h2 class="font-semibold text-slate-700 flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-bed text-teal-600"></i> รายชื่อผู้ป่วย (Patient List)
                 </h2>
-                <div id="patientList" class="space-y-2">
-                    <button onclick="switchPatient('P001')" id="btn-P001" class="w-full text-left p-3 rounded-xl border transition-all flex justify-between items-center bg-teal-50 border-teal-500 shadow-sm">
-                        <div>
-                            <div class="font-bold text-sm text-slate-800">นายสมชาย ใจดี (Bed 01)</div>
-                            <div class="text-xs text-slate-500">HN: 6601001 | อายุ 45 ปี</div>
-                        </div>
-                        <i class="fa-solid fa-chevron-right text-teal-600"></i>
-                    </button>
-                    <button onclick="switchPatient('P002')" id="btn-P002" class="w-full text-left p-3 rounded-xl border transition-all flex justify-between items-center bg-white border-slate-200 hover:border-slate-300">
-                        <div>
-                            <div class="font-bold text-sm text-slate-800">นางประนอม รักสงบ (Bed 02)</div>
-                            <div class="text-xs text-slate-500">HN: 6601002 | อายุ 62 ปี</div>
-                        </div>
-                        <i class="fa-solid fa-chevron-right text-slate-300"></i>
+                <div class="flex gap-2 items-center">
+                    <span class="bg-teal-100 text-teal-800 text-xs font-semibold px-2 py-0.5 rounded-full" id="patientCount">3 เตียง</span>
+                    <button onclick="openAdmitPatientModal()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs px-2 py-1 rounded flex items-center gap-1 transition" title="รับผู้ป่วยใหม่">
+                        <i class="fa-solid fa-user-plus"></i> เพิ่ม
                     </button>
                 </div>
             </div>
-
-            <!-- Patient Quick Info Card -->
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 space-y-3">
-                <h3 class="font-bold text-sm text-slate-700 border-b pb-2">ข้อมูลผู้ป่วยปัจจุบัน</h3>
-                <div class="text-xs space-y-1.5">
-                    <div class="flex justify-between"><span class="text-slate-500">HN / AN:</span> <span id="infoHN" class="font-medium">-</span></div>
-                    <div class="flex justify-between"><span class="text-slate-500">ชื่อ-สกุล:</span> <span id="infoName" class="font-bold text-slate-800">-</span></div>
-                    <div class="flex justify-between"><span class="text-slate-500">อายุ / เพศ:</span> <span id="infoAge" class="font-medium">-</span></div>
-                    <div class="flex justify-between"><span class="text-slate-500">แพทย์ผู้ดูแล:</span> <span id="infoDoctor" class="font-medium">-</span></div>
-                    <div class="pt-2 border-t text-rose-600 font-semibold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> ประวัติแพ้ยา: <span id="infoAllergy" class="font-bold">-</span></div>
-                </div>
+            
+            <div class="divide-y divide-slate-100 overflow-y-auto max-h-[calc(100vh-12rem)]" id="patientListContainer">
+                <!-- Patient Cards -->
+            </div>
+            
+            <div class="p-3 bg-slate-50 border-t border-slate-200 text-xs text-slate-500">
+                <i class="fa-solid fa-circle-info text-teal-600 mr-1"></i> คลิกเลือกผู้ป่วยเพื่อดูและแก้ไขข้อมูล
             </div>
         </aside>
 
-        <!-- Main Content Area -->
-        <section class="lg:col-span-3 space-y-6">
-
-            <!-- Tab 1: Graphic Sheet (Vital Signs Chart) -->
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-                <div class="flex justify-between items-center border-b pb-3">
-                    <h3 class="font-bold text-base text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-chart-line text-teal-600"></i> Graphic Sheet (สัญญาณชีพ)
-                    </h3>
-                    <span class="text-xs text-slate-400">อัปเดตล่าสุดวันนี้</span>
+        <!-- Main Display Area -->
+        <section class="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
+            
+            <!-- Patient Header Information Bar -->
+            <div class="bg-teal-50 p-4 border-b border-teal-100 flex flex-wrap justify-between items-center gap-3" id="patientHeader">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h2 class="text-lg font-bold text-teal-950" id="hdrName">นายสมชาย ใจดี</h2>
+                        <span class="text-xs font-semibold bg-teal-200 text-teal-800 px-2 py-0.5 rounded-md" id="hdrBed">เตียง 01</span>
+                        <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-md font-medium" id="hdrAllergy"><i class="fa-solid fa-triangle-exclamation mr-1"></i> แพ้ยา: Penicillin (Rash)</span>
+                        <button onclick="openEditPatientModal()" class="text-xs bg-white text-teal-700 border border-teal-300 hover:bg-teal-100 px-2 py-0.5 rounded-md flex items-center gap-1 transition">
+                            <i class="fa-solid fa-pen-to-square"></i> แก้ไขข้อมูลผู้ป่วย
+                        </button>
+                    </div>
+                    <div class="text-xs text-slate-600 mt-1 flex flex-wrap gap-4">
+                        <span><strong>HN:</strong> <span id="hdrHN">6601234</span></span>
+                        <span><strong>AN:</strong> <span id="hdrAN">66/00432</span></span>
+                        <span><strong>อายุ:</strong> <span id="hdrAge">45</span> ปี</span>
+                        <span><strong>แพทย์ผู้ดูแล:</strong> <span id="hdrDoctor">นพ.ประเสริฐ สุขใจ</span></span>
+                    </div>
                 </div>
-                <div class="h-64 relative">
-                    <canvas id="vsChart"></canvas>
+                <div class="bg-white p-2 rounded-lg border border-teal-200 shadow-sm text-xs space-y-1">
+                    <div><strong>Diagnosis:</strong> <span id="hdrDx" class="text-teal-800 font-medium">Acute Appendicitis s/p Appendectomy</span></div>
+                    <div><strong>วันที่รับนอน รพ.:</strong> <span id="hdrAdmDate">20 ก.ค. 2026 (1 วัน)</span></div>
                 </div>
             </div>
 
-            <!-- Tab 2: Focus Nursing Note (FDAR) -->
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-                <div class="flex justify-between items-center border-b pb-3">
-                    <h3 class="font-bold text-base text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-notes-medical text-teal-600"></i> บันทึกทางการพยาบาล (Focus Nursing Note - FDAR)
-                    </h3>
+            <!-- Navigation Tabs -->
+            <div class="bg-slate-50 border-b border-slate-200 px-4 flex gap-1 overflow-x-auto text-xs sm:text-sm font-medium">
+                <button onclick="switchTab('orders')" id="tab-orders" class="chart-tab py-3 px-4 text-teal-700 border-b-2 border-teal-600 font-semibold flex items-center gap-1.5 whitespace-nowrap">
+                    <i class="fa-solid fa-user-md text-amber-600"></i> Doctor's Orders
+                </button>
+                <button onclick="switchTab('vitals')" id="tab-vitals" class="chart-tab py-3 px-4 text-slate-600 hover:text-teal-700 border-b-2 border-transparent flex items-center gap-1.5 whitespace-nowrap">
+                    <i class="fa-solid fa-heart-pulse text-red-500"></i> Vital Signs (Pulse & Temp)
+                </button>
+                <button onclick="switchTab('lis')" id="tab-lis" class="chart-tab py-3 px-4 text-slate-600 hover:text-teal-700 border-b-2 border-transparent flex items-center gap-1.5 whitespace-nowrap">
+                    <i class="fa-solid fa-vial text-purple-600"></i> ผลตรวจ Lab (LIS)
+                </button>
+                <button onclick="switchTab('pacs')" id="tab-pacs" class="chart-tab py-3 px-4 text-slate-600 hover:text-teal-700 border-b-2 border-transparent flex items-center gap-1.5 whitespace-nowrap">
+                    <i class="fa-solid fa-x-ray text-indigo-600"></i> ภาพถ่ายรังสี (PACS)
+                </button>
+                <button onclick="switchTab('icd10')" id="tab-icd10" class="chart-tab py-3 px-4 text-slate-600 hover:text-teal-700 border-b-2 border-transparent flex items-center gap-1.5 whitespace-nowrap">
+                    <i class="fa-solid fa-barcode"></i> ICD-10 Coding
+                </button>
+                <button onclick="switchTab('focusnote')" id="tab-focusnote" class="chart-tab py-3 px-4 text-slate-600 hover:text-teal-700 border-b-2 border-transparent flex items-center gap-1.5 whitespace-nowrap">
+                    <i class="fa-solid fa-file-pen"></i> Focus Note
+                </button>
+                <button onclick="switchTab('emar')" id="tab-emar" class="chart-tab py-3 px-4 text-slate-600 hover:text-teal-700 border-b-2 border-transparent flex items-center gap-1.5 whitespace-nowrap">
+                    <i class="fa-solid fa-pills"></i> eMAR
+                </button>
+            </div>
+
+            <!-- Tab Contents Container -->
+            <div class="p-4 flex-1 overflow-y-auto">
+
+                <!-- 0. TAB: DOCTOR'S ORDERS -->
+                <div id="content-orders" class="space-y-5">
+                    <div class="flex justify-between items-center flex-wrap gap-2">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-2">
+                                <i class="fa-solid fa-user-md text-amber-600"></i> คำสั่งการรักษาของแพทย์ (Doctor's Orders)
+                            </h3>
+                            <p class="text-xs text-slate-500">บันทึกคำสั่งการรักษา One-day / Continue และการรับสั่งการรักษาของพยาบาล (Take off order)</p>
+                        </div>
+                        <button onclick="openAddOrderModal()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition shadow-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-plus"></i> เพิ่ม Doctor's Order ใหม่
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- One-Day Orders -->
+                        <div class="border border-amber-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                            <div class="bg-amber-50 px-4 py-2.5 border-b border-amber-200 font-bold text-xs text-amber-900 flex justify-between items-center">
+                                <span><i class="fa-solid fa-bolt mr-1"></i> คำสั่งการรักษาเฉพาะวัน / วันนี้ (One-day Orders)</span>
+                                <span class="bg-amber-200 text-amber-900 text-[10px] px-2 py-0.5 rounded-full" id="countOneDay">0 รายการ</span>
+                            </div>
+                            <div class="divide-y divide-slate-100 text-xs p-2 space-y-2 max-h-96 overflow-y-auto" id="oneDayOrderContainer"></div>
+                        </div>
+
+                        <!-- Continue Orders -->
+                        <div class="border border-teal-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                            <div class="bg-teal-50 px-4 py-2.5 border-b border-teal-200 font-bold text-xs text-teal-900 flex justify-between items-center">
+                                <span><i class="fa-solid fa-arrows-rotate mr-1"></i> คำสั่งการรักษาต่อเนื่อง (Continue Orders)</span>
+                                <span class="bg-teal-200 text-teal-900 text-[10px] px-2 py-0.5 rounded-full" id="countContinue">0 รายการ</span>
+                            </div>
+                            <div class="divide-y divide-slate-100 text-xs p-2 space-y-2 max-h-96 overflow-y-auto" id="continueOrderContainer"></div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Form Add Focus Note -->
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-                    <input type="hidden" id="editingFocusNoteIndex" value="-1">
+                <!-- 1. TAB: VITAL SIGNS & GRAPHIC SHEET -->
+                <div id="content-vitals" class="hidden space-y-5">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-2">
+                                <i class="fa-solid fa-chart-line text-red-500"></i> สัญญาณชีพและสัญญาณเตือน (Graphic Sheet V/S)
+                            </h3>
+                            <p class="text-xs text-slate-500">กราฟเปรียบเทียบจุดชีพจร Pulse Rate (สีฟ้า) และอุณหภูมิ Temperature (สีแดง)</p>
+                        </div>
+                        <button onclick="openAddVitalModal()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 shadow-sm">
+                            <i class="fa-solid fa-plus"></i> บันทึก Vital Signs ใหม่
+                        </button>
+                    </div>
+
+                    <!-- Graphic Sheet Chart -->
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <canvas id="vsChart" class="w-full max-h-64"></canvas>
+                    </div>
+
+                    <div class="overflow-x-auto border border-slate-200 rounded-lg">
+                        <table class="w-full text-xs text-left text-slate-600">
+                            <thead class="text-xs text-slate-700 uppercase bg-slate-100 border-b border-slate-200">
+                                <tr>
+                                    <th class="px-3 py-2">เวลา</th>
+                                    <th class="px-3 py-2 text-red-600">T (°C)</th>
+                                    <th class="px-3 py-2">BP (mmHg)</th>
+                                    <th class="px-3 py-2 text-blue-600">PR จุดชีพจร (bpm)</th>
+                                    <th class="px-3 py-2">RR (bpm)</th>
+                                    <th class="px-3 py-2">SpO2 (%)</th>
+                                    <th class="px-3 py-2">Pain Score</th>
+                                    <th class="px-3 py-2">ผู้บันทึก</th>
+                                    <th class="px-3 py-2 text-center">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vitalTableBody" class="divide-y divide-slate-200 bg-white"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 2. TAB: LIS -->
+                <div id="content-lis" class="hidden space-y-5">
+                    <div class="flex justify-between items-center flex-wrap gap-2">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-2">
+                                <i class="fa-solid fa-flask-vial text-purple-600"></i> ระบบรายงานผลการตรวจทางห้องปฏิบัติการ (LIS Report)
+                            </h3>
+                            <p class="text-xs text-slate-500">แสดงผลวิเคราะห์เลือดและสารเคมีพร้อมการแจ้งเตือนค่าผิดปกติ (Lab Values & Alerts)</p>
+                        </div>
+                        <button onclick="openAddLabModal()" class="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition shadow-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-plus"></i> เพิ่มรายการ Lab / ผลตรวจใหม่
+                        </button>
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div class="md:col-span-2">
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Focus Problem (ข้อวินิจฉัย/ปัญหา)</label>
-                            <input type="text" id="fnFocus" placeholder="เช่น ปวดแผลผ่าตัด, มีไข้สูง" class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-teal-500 outline-none">
+                        <div class="bg-purple-50 p-3 rounded-lg border border-purple-200">
+                            <span class="text-[11px] text-purple-700 font-semibold block">ใบสั่งตรวจล่าสุด (Lab Order)</span>
+                            <span class="font-bold text-xs text-purple-950 block mt-0.5" id="labOrderTitle">CBC, Electrolytes, BUN/Cr</span>
+                            <span class="text-[10px] text-slate-500" id="labOrderDate">รายงานเมื่อ: 20 ก.ค. 2026 - 07:30 น.</span>
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">เวร</label>
-                            <select id="fnShift" class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-teal-500 outline-none">
-                                <option value="เวรเช้า (07:00 - 15:00)">เวรเช้า (07:00 - 15:00)</option>
-                                <option value="เวรบ่าย (15:00 - 23:00)">เวรบ่าย (15:00 - 23:00)</option>
-                                <option value="เวรดึก (23:00 - 07:00)">เวรดึก (23:00 - 07:00)</option>
-                            </select>
+                        <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-200">
+                            <span class="text-[11px] text-emerald-700 font-semibold block">สถานะการอนุมัติผล (Approval Status)</span>
+                            <span class="font-bold text-xs text-emerald-950 block mt-0.5"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> รายงานผลสมบูรณ์ (Approved)</span>
+                            <span class="text-[10px] text-slate-500">ผู้รับรอง: ทนพ. วิทยา (นักเทคนิคการแพทย์)</span>
                         </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-red-600 mb-1">Data (D) - ข้อมูลประเมิน</label>
-                            <textarea id="fnData" rows="2" placeholder="อาการ บ่นปวด V/S..." class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-teal-500 outline-none"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-blue-600 mb-1">Action (A) - กิจกรรมการพยาบาล</label>
-                            <textarea id="fnAction" rows="2" placeholder="ให้ยาแก้ปวด จัดท่า..." class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-teal-500 outline-none"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-emerald-600 mb-1">Response (R) - การตอบสนอง</label>
-                            <textarea id="fnResponse" rows="2" placeholder="อาการปวดลดลง Pain scale เหลือ 2..." class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-teal-500 outline-none"></textarea>
+                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 flex items-center justify-between">
+                            <div>
+                                <span class="text-[11px] text-slate-500 block">ค่าวิตกขั้นวิกฤต (Critical Alert)</span>
+                                <span class="font-bold text-xs text-red-600" id="labCriticalStatus">มีค่าผิดปกติ (High WBC)</span>
+                            </div>
+                            <span class="w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
                         </div>
                     </div>
-                    <div class="flex justify-end gap-2 pt-1">
-                        <button id="btnCancelFocusNote" onclick="cancelEditFocusNote()" class="hidden px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs rounded-lg font-medium transition">ยกเลิก</button>
-                        <button id="btnSaveFocusNote" onclick="saveFocusNote()" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs rounded-lg font-medium shadow-sm transition flex items-center gap-1">
-                            <i class="fa-solid fa-paper-plane"></i> บันทึก Focus Note
-                        </button>
+
+                    <div class="border border-slate-200 rounded-lg overflow-hidden shadow-sm">
+                        <table class="w-full text-xs text-left text-slate-600">
+                            <thead class="text-xs text-slate-700 uppercase bg-slate-100 border-b border-slate-200">
+                                <tr>
+                                    <th class="px-3 py-2.5">รายการตรวจ (Test Name)</th>
+                                    <th class="px-3 py-2.5">ผลการตรวจ (Result)</th>
+                                    <th class="px-3 py-2.5">หน่วย (Unit)</th>
+                                    <th class="px-3 py-2.5">ค่าอ้างอิงปกติ (Reference Range)</th>
+                                    <th class="px-3 py-2.5 text-center">สถานะ (Flag)</th>
+                                    <th class="px-3 py-2.5 text-center">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lisTableBody" class="divide-y divide-slate-200 bg-white"></tbody>
+                        </table>
                     </div>
                 </div>
 
-                <!-- List of Focus Notes -->
-                <div id="focusNoteList" class="space-y-3">
-                    <!-- Dynamic Items -->
+                <!-- 3. TAB: PACS -->
+                <div id="content-pacs" class="hidden space-y-5">
+                    <div class="flex justify-between items-center flex-wrap gap-2">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-2">
+                                <i class="fa-solid fa-x-ray text-indigo-600"></i> ระบบภาพถ่ายทางการแพทย์ดิจิทัล (PACS Viewer)
+                            </h3>
+                            <p class="text-xs text-slate-500">จำลองการเปิดดูภาพเอกซเรย์ X-Ray / CT-Scan และรายงานผลจากรังสีแพทย์</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="openEditPacsModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 shadow-sm">
+                                <i class="fa-solid fa-pen"></i> แก้ไขผลอ่านภาพรังสี
+                            </button>
+                            <button onclick="togglePacsInvert()" class="bg-slate-800 text-white text-xs px-3 py-1.5 rounded-lg font-medium hover:bg-black transition flex items-center gap-1">
+                                <i class="fa-solid fa-circle-half-stroke"></i> Invert Color
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                        <div class="lg:col-span-7 pacs-viewer p-4 rounded-xl border border-slate-800 flex flex-col items-center justify-center relative min-h-[320px] text-white">
+                            <div class="absolute top-3 left-3 text-[11px] font-mono text-emerald-400 bg-black/60 p-2 rounded border border-emerald-900/50 space-y-0.5">
+                                <div><strong id="pacsImgStudy">Study: Chest PA Upright</strong></div>
+                                <div>Accession No: <span id="pacsAccNo">RAD66-00432</span></div>
+                                <div>Date: 20/07/2026 08:15</div>
+                            </div>
+                            
+                            <div id="pacsGraphicContainer" class="my-6 p-6 transition-all duration-300 transform scale-100 flex flex-col items-center justify-center">
+                                <div id="pacsGraphicSvg" class="w-48 h-56 text-slate-300 flex items-center justify-center border-2 border-dashed border-slate-700 rounded-xl bg-slate-900/80 p-4 shadow-inner">
+                                    <i class="fa-solid fa-x-ray text-7xl text-slate-500"></i>
+                                </div>
+                                <span class="text-[11px] text-slate-400 mt-2 font-mono" id="pacsImageLabel">[ Simulation Digital Radiograph ]</span>
+                            </div>
+
+                            <div class="w-full flex justify-between items-center text-[11px] text-slate-400 border-t border-slate-800 pt-2 font-mono">
+                                <span>Zoom: 100% | WL: 40 WW: 400</span>
+                                <span>DICOM 3.0 Standard</span>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-5 bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                            <div class="flex justify-between items-center border-b pb-2">
+                                <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider">
+                                    <i class="fa-solid fa-file-medical text-indigo-600 mr-1"></i> รายงานผลการอ่านภาพรังสี (Radiology Report)
+                                </h4>
+                                <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-semibold">Finalized</span>
+                            </div>
+                            <div class="space-y-2 text-xs">
+                                <div>
+                                    <strong class="text-slate-700 block">สิ่งตรวจพบ (Findings):</strong>
+                                    <p class="text-slate-600 leading-relaxed bg-white p-2.5 rounded-lg border border-slate-200 whitespace-pre-line" id="pacsReportFindings"></p>
+                                </div>
+                                <div>
+                                    <strong class="text-slate-700 block">ผลสรุปการวินิจฉัย (Impression):</strong>
+                                    <p class="text-indigo-950 font-semibold leading-relaxed bg-indigo-50/70 p-2.5 rounded-lg border border-indigo-200 whitespace-pre-line" id="pacsReportImpression"></p>
+                                </div>
+                                <div class="pt-2 text-right text-[11px] text-slate-400">
+                                    รังสีแพทย์ผู้แปลผล: <span class="font-medium text-slate-700" id="pacsDoctor">พญ. นภาพร (รังสีแพทย์)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- 4. TAB: ICD-10 CODING SYSTEM -->
+                <div id="content-icd10" class="hidden space-y-5">
+                    <div class="flex justify-between items-center flex-wrap gap-2">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-2">
+                                <i class="fa-solid fa-book-medical text-teal-600"></i> ระบบการบันทึกรหัสโรค ICD-10 (Diagnostic Coding)
+                            </h3>
+                            <p class="text-xs text-slate-500">รองรับรหัสโรคครอบคลุมทุกหมวดอักษร A-Z (ค้นหาด้วย รหัสโรค หรือ ชื่อโรคได้ทันที)</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                        <h4 class="font-bold text-xs text-slate-700 uppercase tracking-wider"><i class="fa-solid fa-magnifying-glass mr-1"></i> ค้นหาและบันทึกรหัส ICD-10 เพิ่มเติม</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 relative">
+                            <div class="sm:col-span-6 relative">
+                                <label class="block text-xs font-medium text-slate-600 mb-1">ค้นหารหัส ICD-10 หรือ ชื่อโรค (ภาษาอังกฤษ/ไทย)</label>
+                                <div class="relative">
+                                    <input type="text" id="icdSearchInput" oninput="searchICD10()" placeholder="ลองพิมพ์ F32, Depressive, K35, E11, J18, COVID..." class="w-full text-xs p-2 pl-8 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                                    <i class="fa-solid fa-search absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
+                                </div>
+                                <div id="icdSearchResult" class="absolute z-20 left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-56 overflow-y-auto hidden"></div>
+                            </div>
+                            <div class="sm:col-span-4">
+                                <label class="block text-xs font-medium text-slate-600 mb-1">ประเภทการวินิจฉัย (Diagnosis Type)</label>
+                                <select id="icdDiagType" class="w-full text-xs p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                                    <option value="Principal Dx">Principal Diagnosis (การวินิจฉัยหลัก)</option>
+                                    <option value="Comorbidity">Comorbidity (โรคร่วม)</option>
+                                    <option value="Complication">Complication (ภาวะแทรกซ้อน)</option>
+                                    <option value="Other Dx">Other Diagnosis (การวินิจฉัยอื่นๆ)</option>
+                                </select>
+                            </div>
+                            <div class="sm:col-span-2 flex items-end">
+                                <button onclick="addSelectedICD10()" class="w-full bg-teal-600 hover:bg-teal-700 text-white text-xs py-2 px-3 rounded-lg font-medium transition shadow-sm flex items-center justify-center gap-1">
+                                    <i class="fa-solid fa-plus"></i> บันทึกรหัส
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="selectedIcdCode">
+                    <input type="hidden" id="selectedIcdName">
+
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-bold text-slate-700 text-xs uppercase tracking-wider">ตารางรหัส ICD-10 ผู้ป่วยในเตียงนี้</h4>
+                            <span class="text-xs text-slate-500">รวมทั้งหมด <strong id="icdCount">0</strong> รหัส</span>
+                        </div>
+                        <div class="overflow-x-auto border border-slate-200 rounded-lg">
+                            <table class="w-full text-xs text-left text-slate-600">
+                                <thead class="text-xs text-slate-700 uppercase bg-slate-100 border-b border-slate-200">
+                                    <tr>
+                                        <th class="px-3 py-2.5">ICD-10 Code</th>
+                                        <th class="px-3 py-2.5">คำอธิบายโรค (Diagnosis Description)</th>
+                                        <th class="px-3 py-2.5">ประเภทการวินิจฉัย</th>
+                                        <th class="px-3 py-2.5">ผู้ลงรหัส</th>
+                                        <th class="px-3 py-2.5 text-center">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="icdTableBody" class="divide-y divide-slate-200 bg-white"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. TAB: FOCUS NURSING NOTE (DAR) -->
+                <div id="content-focusnote" class="hidden space-y-5">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-2">
+                            <i class="fa-solid fa-file-signature text-teal-600"></i> บันทึกทางการพยาบาลแบบ Focus Note (FDAR)
+                        </h3>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                        <input type="hidden" id="editingFocusNoteIndex" value="-1">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Focus Problem (ข้อวินิจฉัย/ปัญหา)</label>
+                                <input type="text" id="fnFocus" placeholder="เช่น สุขสบายลดลงเนื่องจากปวดแผล" class="w-full text-xs p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">เวร (Shift)</label>
+                                <select id="fnShift" class="w-full text-xs p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                                    <option value="เวรเช้า (07:00 - 15:00)">เวรเช้า (07:00 - 15:00)</option>
+                                    <option value="เวรบ่าย (15:00 - 23:00)">เวรบ่าย (15:00 - 23:00)</option>
+                                    <option value="เวรดึก (23:00 - 07:00)">เวรดึก (23:00 - 07:00)</option>
+                                </select>
+                            </div>
+                            <div class="flex items-end gap-2">
+                                <button onclick="saveFocusNote()" id="btnSaveFocusNote" class="w-full bg-teal-600 hover:bg-teal-700 text-white text-xs py-2 px-4 rounded-lg font-medium transition shadow-sm flex justify-center items-center gap-1">
+                                    <i class="fa-solid fa-paper-plane"></i> บันทึก Focus Note
+                                </button>
+                                <button onclick="cancelEditFocusNote()" id="btnCancelFocusNote" class="bg-slate-300 hover:bg-slate-400 text-slate-700 text-xs py-2 px-3 rounded-lg font-medium transition hidden">
+                                    ยกเลิก
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+                            <div>
+                                <label class="block text-xs font-semibold text-red-700 mb-1"><i class="fa-solid fa-database"></i> Data (D) - ข้อมูลสนับสนุน</label>
+                                <textarea id="fnData" rows="3" placeholder="- ผู้ป่วยบ่นปวดแผลผ่าตัด RLQ Pain score 4/10..." class="w-full text-xs p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-400 outline-none"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-blue-700 mb-1"><i class="fa-solid fa-hand-holding-medical"></i> Action (A) - การปฏิบัติการพยาบาล</label>
+                                <textarea id="fnAction" rows="3" placeholder="- ประเมิน V/S และ Pain score..." class="w-full text-xs p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-emerald-700 mb-1"><i class="fa-solid fa-square-check"></i> Response (R) - การประเมินผล</label>
+                                <textarea id="fnResponse" rows="3" placeholder="- หลังได้รับยา 30 นาที ปวดลดลง Pain score เหลือ 1/10..." class="w-full text-xs p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-400 outline-none"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3" id="focusNoteList"></div>
+                </div>
+
+                <!-- 6. TAB: eMAR -->
+                <div id="content-emar" class="hidden space-y-5">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-2">
+                            <i class="fa-solid fa-capsules text-teal-600"></i> eMAR - บันทึกการบริหารยา electronic MAR
+                        </h3>
+                        <div class="flex gap-2">
+                            <button onclick="openAddMedModal()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition shadow-sm flex items-center gap-1">
+                                <i class="fa-solid fa-plus"></i> สั่งยาใหม่ (New Medication)
+                            </button>
+                            <button onclick="simulateBarcodeScan()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition shadow-sm flex items-center gap-1.5">
+                                <i class="fa-solid fa-qrcode"></i> จำลองสแกน Barcode ยา/ป้ายข้อมือ
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto border border-slate-200 rounded-lg">
+                        <table class="w-full text-xs text-left text-slate-600">
+                            <thead class="text-xs text-slate-700 uppercase bg-slate-100 border-b border-slate-200">
+                                <tr>
+                                    <th class="px-3 py-2.5">ชื่อยา / ขนาดยา / วิธีใช้</th>
+                                    <th class="px-3 py-2.5">รอบเวลา</th>
+                                    <th class="px-3 py-2.5">สถานะการให้ยา</th>
+                                    <th class="px-3 py-2.5">เวลาที่ให้จริง</th>
+                                    <th class="px-3 py-2.5">ผู้บันทึก</th>
+                                    <th class="px-3 py-2.5 text-center">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="emarTableBody" class="divide-y divide-slate-200 bg-white"></tbody>
+                        </table>
+                    </div>
+                </div>
+
             </div>
-
-            <!-- Tab 3: eMAR (Electronic Medication Administration Record) -->
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-                <div class="flex justify-between items-center border-b pb-3 flex-wrap gap-2">
-                    <h3 class="font-bold text-base text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-pills text-teal-600"></i> บันทึกการบริหารยา (eMAR)
-                    </h3>
-                    <div class="flex items-center gap-2">
-                        <button onclick="simulateBarcodeScan()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs px-3 py-1.5 rounded-lg font-medium shadow-sm transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-barcode"></i> สแกนบาร์โค้ด
-                        </button>
-                        <button onclick="openAddMedModal()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs px-3 py-1.5 rounded-lg font-medium shadow-sm transition flex items-center gap-1">
-                            <i class="fa-solid fa-plus"></i> เพิ่มรายการยา
-                        </button>
-                    </div>
-                </div>
-
-                <!-- eMAR Table -->
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold">
-                                <th class="px-3 py-2.5">ชื่อยา / ขนาดยา / วิธีใช้</th>
-                                <th class="px-3 py-2.5">เวลาที่ต้องให้</th>
-                                <th class="px-3 py-2.5">สถานะ</th>
-                                <th class="px-3 py-2.5">เวลาบริหารยาจริง</th>
-                                <th class="px-3 py-2.5">ผู้ให้ยา</th>
-                                <th class="px-3 py-2.5 text-center">จัดการ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="emarTableBody" class="divide-y divide-slate-100">
-                            <!-- Dynamic Items -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Tab 4: ICD-10 Coding Module -->
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-                <div class="flex justify-between items-center border-b pb-3">
-                    <h3 class="font-bold text-base text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-file-invoice-dollar text-teal-600"></i> การวินิจฉัยโรค (ICD-10 Coding)
-                    </h3>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div class="md:col-span-2 relative">
-                        <input type="text" id="icdSearchInput" oninput="searchICD10(this.value)" placeholder="ค้นหารหัส ICD-10 หรือชื่อโรค (เช่น I10, E11, Dengue)..." class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-teal-500 outline-none">
-                        <div id="icdSearchResults" class="hidden absolute top-full left-0 w-full bg-white border border-slate-200 rounded-lg shadow-lg mt-1 z-20 max-h-48 overflow-y-auto"></div>
-                    </div>
-                    <div>
-                        <button onclick="addICD10()" class="w-full bg-teal-600 hover:bg-teal-700 text-white text-xs py-2.5 rounded-lg font-medium transition flex items-center justify-center gap-1">
-                            <i class="fa-solid fa-plus"></i> เพิ่มรหัส ICD-10
-                        </button>
-                    </div>
-                </div>
-                <input type="hidden" id="selectedIcdCode">
-                <input type="hidden" id="selectedIcdName">
-
-                <div id="icdList" class="space-y-2 pt-2">
-                    <!-- Dynamic ICD-10 Items -->
-                </div>
-            </div>
-
         </section>
+
     </main>
 
-    <!-- Modal: Add Medication -->
-    <div id="addMedModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-4 shadow-xl">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="font-bold text-slate-800 text-sm">สั่งรายการยาใหม่ (eMAR Order)</h3>
-                <button onclick="closeAddMedModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+    <!-- MODAL: Add Doctor's Order -->
+    <div id="addOrderModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-5 space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-slate-800 text-sm sm:text-base"><i class="fa-solid fa-user-md text-amber-600 mr-1"></i> เพิ่มคำสั่งการรักษาของแพทย์ (Doctor's Order)</h3>
+                <button onclick="closeAddOrderModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <div class="space-y-3 text-xs">
                 <div>
-                    <label class="block font-semibold text-slate-600 mb-1">ชื่อยา และ ขนาดการใช้</label>
-                    <input type="text" id="medName" placeholder="เช่น Paracetamol 500mg 1 tab po prn" class="w-full p-2.5 rounded-lg border border-slate-300 outline-none focus:ring-2 focus:ring-teal-500">
+                    <label class="block text-slate-600 mb-1">ประเภทคำสั่ง (Type)</label>
+                    <select id="ordType" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                        <option value="one-day">One-day Order (คำสั่งเฉพาะวัน/วันนี้)</option>
+                        <option value="continue">Continue Order (คำสั่งต่อเนื่อง)</option>
+                    </select>
                 </div>
                 <div>
-                    <label class="block font-semibold text-slate-600 mb-1">เวลาบริหารยา</label>
-                    <input type="text" id="medSchedule" placeholder="เช่น 08:00, 12:00, 16:00, 20:00 น." class="w-full p-2.5 rounded-lg border border-slate-300 outline-none focus:ring-2 focus:ring-teal-500">
+                    <label class="block text-slate-600 mb-1">รายละเอียดคำสั่งการรักษา (Order Detail)</label>
+                    <textarea id="ordDetail" rows="3" placeholder="เช่น Paracetamol (500mg) 1 tab p.o. prn q 6 hr for fever > 38.5 C" class="w-full p-2 border border-slate-300 rounded-lg outline-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1">แพทย์ผู้สั่ง (Doctor Name)</label>
+                    <input type="text" id="ordDoctor" value="นพ.ประเสริฐ สุขใจ" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
                 </div>
             </div>
-            <div class="flex justify-end gap-2 pt-2 border-t">
-                <button onclick="closeAddMedModal()" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs rounded-lg font-medium transition">ยกเลิก</button>
-                <button onclick="saveNewMedication()" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs rounded-lg font-medium transition">บันทึกยา</button>
+            <div class="pt-2 flex gap-2">
+                <button onclick="saveDoctorOrder()" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs py-2 rounded-lg font-medium transition shadow-sm">บันทึก Order</button>
+                <button onclick="closeAddOrderModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs px-4 py-2 rounded-lg font-medium transition">ยกเลิก</button>
             </div>
         </div>
     </div>
 
-    <!-- JavaScript Logic -->
-    <script>
-        // --- DATA STORE ---
-        let currentPatientId = 'P001';
-        let vsChartInstance = null;
+    <!-- MODAL: Admit New Patient -->
+    <div id="admitPatientModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl shadow-xl max-w-lg w-full p-5 space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-slate-800 text-sm sm:text-base"><i class="fa-solid fa-user-plus text-teal-600 mr-1"></i> รับผู้ป่วยใหม่เข้าเตียง (Admit Patient)</h3>
+                <button onclick="closeAdmitPatientModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="grid grid-cols-2 gap-3 text-xs">
+                <div>
+                    <label class="block text-slate-600 mb-1">หมายเลขเตียง</label>
+                    <input type="text" id="admBed" placeholder="เช่น เตียง 04" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1">ชื่อ-นามสกุล</label>
+                    <input type="text" id="admName" placeholder="เช่น นายสมศักดิ์ รักดี" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1">HN</label>
+                    <input type="text" id="admHN" placeholder="6609988" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1">AN</label>
+                    <input type="text" id="admAN" placeholder="66/01234" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1">อายุ (ปี)</label>
+                    <input type="number" id="admAge" value="50" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1">ประวัติแพ้ยา</label>
+                    <input type="text" id="admAllergy" placeholder="ปฏิเสธประวัติแพ้ยา หรือ ระบุชื่อยา" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-slate-600 mb-1">การวินิจฉัยโรคขั้นต้น (Diagnosis)</label>
+                    <input type="text" id="admDx" placeholder="เช่น Acute Gastritis" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+            </div>
+            <div class="pt-2 flex gap-2">
+                <button onclick="saveAdmitPatient()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-xs py-2 rounded-lg font-medium transition shadow-sm">บันทึกรับผู้ป่วย</button>
+                <button onclick="closeAdmitPatientModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs px-4 py-2 rounded-lg font-medium transition">ยกเลิก</button>
+            </div>
+        </div>
+    </div>
 
-        const mockIcdDatabase = [
-            { code: 'I10', name: 'Essential (primary) hypertension' },
-            { code: 'E11.9', name: 'Type 2 diabetes mellitus without complications' },
-            { code: 'A90', name: 'Dengue fever [classical dengue]' },
-            { code: 'J18.9', name: 'Pneumonia, unspecified' },
-            { code: 'K29.7', name: 'Gastritis, unspecified' },
-            { code: 'N39.0', name: 'Urinary tract infection, site not specified' }
+    <!-- MODAL: Edit Patient Profile -->
+    <div id="editPatientModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl shadow-xl max-w-lg w-full p-5 space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-slate-800 text-sm sm:text-base"><i class="fa-solid fa-user-pen text-teal-600 mr-1"></i> แก้ไขข้อมูลผู้ป่วย</h3>
+                <button onclick="closeEditPatientModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="grid grid-cols-2 gap-3 text-xs">
+                <div>
+                    <label class="block text-slate-600 mb-1">ชื่อ-นามสกุล</label>
+                    <input type="text" id="editName" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1">เตียง</label>
+                    <input type="text" id="editBed" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1">HN</label>
+                    <input type="text" id="editHN" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1">AN</label>
+                    <input type="text" id="editAN" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1">อายุ (ปี)</label>
+                    <input type="number" id="editAge" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1">ประวัติแพ้ยา</label>
+                    <input type="text" id="editAllergy" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-slate-600 mb-1">การวินิจฉัยโรค (Diagnosis)</label>
+                    <input type="text" id="editDx" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+            </div>
+            <div class="pt-2 flex gap-2">
+                <button onclick="saveEditPatient()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-xs py-2 rounded-lg font-medium transition shadow-sm">บันทึกการปรับปรุง</button>
+                <button onclick="closeEditPatientModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs px-4 py-2 rounded-lg font-medium transition">ยกเลิก</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Add New Lab Item -->
+    <div id="addLabModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-5 space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-slate-800 text-sm sm:text-base"><i class="fa-solid fa-flask-vial text-purple-600 mr-1"></i> เพิ่มรายการผล Lab</h3>
+                <button onclick="closeAddLabModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="grid grid-cols-2 gap-3 text-xs">
+                <div class="col-span-2">
+                    <label class="block text-slate-600 mb-1">ชื่อรายการตรวจ (Test Name)</label>
+                    <input type="text" id="labTestName" placeholder="เช่น Sodium (Na), FBS, HbA1c" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1">ผลการตรวจ (Result)</label>
+                    <input type="text" id="labResult" placeholder="138" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1">หน่วย (Unit)</label>
+                    <input type="text" id="labUnit" placeholder="mEq/L" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-slate-600 mb-1">ค่าอ้างอิงปกติ (Reference Range)</label>
+                    <input type="text" id="labRef" placeholder="135 - 145" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1">สถานะ (Flag Status)</label>
+                    <select id="labStatus" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                        <option value="Normal">Normal (ปกติ)</option>
+                        <option value="High">High (สูงกว่าปกติ)</option>
+                        <option value="Low">Low (ต่ำกว่าปกติ)</option>
+                        <option value="Abnormal">Abnormal (ผิดปกติ)</option>
+                    </select>
+                </div>
+                <div class="flex items-center pt-4">
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="labAlert" class="sr-only peer">
+                        <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-600 relative"></div>
+                        <span class="ml-2 text-xs font-medium text-red-600">วิกฤต/แจ้งเตือน (Alert)</span>
+                    </label>
+                </div>
+            </div>
+            <div class="pt-2 flex gap-2">
+                <button onclick="saveNewLabItem()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-xs py-2 rounded-lg font-medium transition shadow-sm">บันทึกรายการ Lab</button>
+                <button onclick="closeAddLabModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs px-4 py-2 rounded-lg font-medium transition">ยกเลิก</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Edit PACS Report -->
+    <div id="editPacsModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl shadow-xl max-w-lg w-full p-5 space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-slate-800 text-sm sm:text-base"><i class="fa-solid fa-x-ray text-indigo-600 mr-1"></i> แก้ไขผลอ่านภาพถ่ายรังสี (PACS Report)</h3>
+                <button onclick="closeEditPacsModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-600 mb-1">ชื่อท่า/สิ่งส่งตรวจ (Study)</label>
+                    <input type="text" id="pacsEditStudy" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1">Accession Number</label>
+                    <input type="text" id="pacsEditAcc" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1">สิ่งตรวจพบ (Findings)</label>
+                    <textarea id="pacsEditFindings" rows="3" class="w-full p-2 border border-slate-300 rounded-lg outline-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1">ผลสรุปการวินิจฉัย (Impression)</label>
+                    <textarea id="pacsEditImpression" rows="2" class="w-full p-2 border border-slate-300 rounded-lg outline-none"></textarea>
+                </div>
+            </div>
+            <div class="pt-2 flex gap-2">
+                <button onclick="saveEditPacs()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs py-2 rounded-lg font-medium transition shadow-sm">บันทึกผล PACS</button>
+                <button onclick="closeEditPacsModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs px-4 py-2 rounded-lg font-medium transition">ยกเลิก</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Add Vital Signs -->
+    <div id="addVitalModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-5 space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-slate-800 text-sm sm:text-base"><i class="fa-solid fa-heart-pulse text-teal-600 mr-1"></i> บันทึกสัญญาณชีพ (Vital Signs)</h3>
+                <button onclick="closeAddVitalModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="grid grid-cols-2 gap-3 text-xs">
+                <div>
+                    <label class="block text-slate-600 mb-1">เวลาที่วัด</label>
+                    <input type="time" id="newTime" value="14:00" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1">อุณหภูมิ T (°C)</label>
+                    <input type="number" step="0.1" id="newTemp" value="37.0" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1">ความดัน BP (mmHg)</label>
+                    <input type="text" id="newBP" value="120/80" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1">ชีพจร PR จุด Pulse (bpm)</label>
+                    <input type="number" id="newPR" value="78" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+            </div>
+            <div class="pt-2 flex gap-2">
+                <button onclick="saveVitalSign()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-xs py-2 rounded-lg font-medium transition shadow-sm">บันทึกข้อมูล</button>
+                <button onclick="closeAddVitalModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs px-4 py-2 rounded-lg font-medium transition">ยกเลิก</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Add New Medication -->
+    <div id="addMedModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-5 space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-slate-800 text-sm sm:text-base"><i class="fa-solid fa-capsules text-teal-600 mr-1"></i> เพิ่มรายการยาใหม่ (eMAR Order)</h3>
+                <button onclick="closeAddMedModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-600 mb-1">ชื่อยา / ขนาดยา / วิธีใช้</label>
+                    <input type="text" id="medName" placeholder="เช่น Paracetamol 500 mg 1 tab p.o. prn q 6 hr" class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1">รอบเวลาบริหารยา</label>
+                    <input type="text" id="medSchedule" placeholder="เช่น 08:00 น., 12:00 น., 16:00 น." class="w-full p-2 border border-slate-300 rounded-lg outline-none">
+                </div>
+            </div>
+            <div class="pt-2 flex gap-2">
+                <button onclick="saveNewMedication()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-xs py-2 rounded-lg font-medium transition shadow-sm">บันทึกคำสั่งยา</button>
+                <button onclick="closeAddMedModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs px-4 py-2 rounded-lg font-medium transition">ยกเลิก</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const icd10Database = [
+            { code: 'A09.9', name: 'Gastroenteritis and colitis of unspecified origin (ลำไส้อักเสบ/ท้องเสีย)' },
+            { code: 'A90', name: 'Dengue fever (ไข้เลือดออกเดงกี)' },
+            { code: 'E11.9', name: 'Type 2 diabetes mellitus without complications (เบาหวานชนิดที่ 2)' },
+            { code: 'F32.1', name: 'Moderate depressive episode (โรคซึมเศร้า ระดับปานกลาง)' },
+            { code: 'I10', name: 'Essential (primary) hypertension (ความดันโลหิตสูง)' },
+            { code: 'J18.9', name: 'Pneumonia, unspecified (ปอดบวม/ปอดอักเสบ)' },
+            { code: 'K35.8', name: 'Acute appendicitis (ไส้ติ่งอักเสบเฉียบพลัน)' },
+            { code: 'N39.0', name: 'Urinary tract infection (ติดเชื้อทางเดินปัสสาวะ)' }
         ];
 
-        const patientsData = {
-            'P001': {
-                hn: '6601001 / AN 66/012',
-                name: 'นายสมชาย ใจดี',
-                age: '45 ปี / ชาย',
-                doctor: 'นพ.สมศักดิ์ วงศ์สว่าง',
-                allergy: 'Penicillin',
+        let patientsData = {
+            1: {
+                id: 1, name: 'นายสมชาย ใจดี', bed: 'เตียง 01', hn: '6601234', an: '66/00432', age: 45, doctor: 'นพ.ประเสริฐ สุขใจ',
+                dx: 'Acute Appendicitis s/p Appendectomy', admDate: '20 ก.ค. 2026 (1 วัน)', allergy: 'Penicillin (Rash)', statusBadge: 'Post-op Day 1',
+                doctorOrders: [
+                    { id: 101, type: 'one-day', detail: 'Stat Cefazolin 1g IV v push', doctor: 'นพ.ประเสริฐ สุขใจ', time: '07:30 น.', acknowledgedBy: 'พว. สมหญิง (07:45 น.)' },
+                    { id: 102, type: 'one-day', detail: 'NPO except sips of water', doctor: 'นพ.ประเสริฐ สุขใจ', time: '08:00 น.', acknowledgedBy: 'พว. สมหญิง (08:05 น.)' },
+                    { id: 103, type: 'continue', detail: '5% D/N/2 1,000 mL IV drip 80 mL/hr', doctor: 'นพ.ประเสริฐ สุขใจ', time: '08:00 น.', acknowledgedBy: 'พว. สมหญิง (08:10 น.)' },
+                    { id: 104, type: 'continue', detail: 'Paracetamol (500mg) 1 tab p.o. prn for pain q 6 hr', doctor: 'นพ.ประเสริฐ สุขใจ', time: '08:00 น.', acknowledgedBy: null }
+                ],
                 vitals: [
-                    { time: '02:00', temp: 37.8, pr: 88, bp: '128/82' },
-                    { time: '06:00', temp: 38.2, pr: 94, bp: '130/85' },
-                    { time: '10:00', temp: 37.5, pr: 82, bp: '122/80' },
-                    { time: '14:00', temp: 36.8, pr: 76, bp: '120/78' }
+                    { time: '02:00', temp: 37.2, bp: '124/82', pr: 82, rr: 18, spo2: 98, pain: 4, nurse: 'พว. สมหญิง' },
+                    { time: '06:00', temp: 36.8, bp: '120/80', pr: 78, rr: 18, spo2: 98, pain: 2, nurse: 'พว. สมหญิง' },
+                    { time: '10:00', temp: 37.0, bp: '118/78', pr: 80, rr: 16, spo2: 99, pain: 1, nurse: 'พว. สมหญิง' }
                 ],
-                focusNotes: [
-                    {
-                        shift: 'เวรเช้า (07:00 - 15:00)',
-                        focus: 'มีไข้สูง (Hyperthermia)',
-                        time: '08:30 น.',
-                        data: 'ผู้ป่วยบ่นหนาวสั่น BT = 38.2 °C, PR = 94 bpm, ผิวหนังชื้นเหงื่อ',
-                        action: 'เช็ดตัวลดไข้ (Tepid sponge), ให้ยา Paracetamol (500mg) 1 Tab ตามแผนการรักษา',
-                        response: 'หลังเช็ดตัว 30 นาที สังเกต BT ลดลงเหลือ 37.5 °C ผู้ป่วยสบายตัวขึ้น',
-                        nurse: 'พว. สมหญิง'
-                    }
+                icd10List: [{ code: 'K35.8', name: 'Acute appendicitis', type: 'Principal Dx', coder: 'นพ. ประเสริฐ' }],
+                labs: [
+                    { name: 'WBC (White Blood Cell)', result: '14,500', unit: 'cells/cu.mm', ref: '4,500 - 10,000', status: 'High', alert: true },
+                    { name: 'Neutrophil', result: '82', unit: '%', ref: '40 - 70', status: 'High', alert: true },
+                    { name: 'Hemoglobin (Hb)', result: '14.2', unit: 'g/dL', ref: '13.0 - 17.5', status: 'Normal', alert: false },
+                    { name: 'Platelet Count', result: '250,000', unit: '/cu.mm', ref: '150,000 - 450,000', status: 'Normal', alert: false },
+                    { name: 'Creatinine (Cr)', result: '0.9', unit: 'mg/dL', ref: '0.7 - 1.2', status: 'Normal', alert: false }
                 ],
-                emars: [
-                    { name: 'Paracetamol 500mg 1 tab po prn q 4-6 hr', schedule: '08:00 น.', status: 'given', givenTime: '08:15 น.', nurse: 'พว. สมหญิง' },
-                    { name: 'Ceftriaxone 1g IV OD', schedule: '10:00 น.', status: 'given', givenTime: '10:05 น.', nurse: 'พว. สมหญิง' },
-                    { name: 'Omeprazole 20mg 1 cap po ac', schedule: '17:00 น.', status: 'pending', givenTime: '-', nurse: '-' }
-                ],
-                icd10List: [
-                    { code: 'A90', name: 'Dengue fever [classical dengue]', nurse: 'พว. สมหญิง' }
-                ]
+                pacs: {
+                    study: 'CT Lower Abdomen with IV Contrast', accession: 'RAD66-00432',
+                    icon: 'fa-solid fa-radiation text-amber-500 text-7xl', label: '[ Simulated CT Abdomen Image ]',
+                    findings: 'Dilated appendix measuring 1.1 cm in diameter with appendiceal wall thickening and fat stranding in RLQ. No free air or localized abscess formation.',
+                    impression: 'Acute appendicitis without perforation.'
+                },
+                focusNotes: [{ shift: 'เวรเช้า (07:00 - 15:00)', focus: 'ปวดแผลผ่าตัด (Post-op Pain)', time: '08:30 น.', data: 'ผู้ป่วยบ่นปวดแผล RLQ Pain score 3/10', action: 'ประเมิน Pain score ให้ Paracetamol 1 tab', response: 'ปวดลดลง Pain score เหลือ 1/10', nurse: 'พว. สมหญิง' }],
+                emars: [{ name: 'Cefazolin 1 g IV v push', schedule: '08:00 น.', status: 'pending', givenTime: '-', nurse: '-' }]
             },
-            'P002': {
-                hn: '6601002 / AN 66/018',
-                name: 'นางประนอม รักสงบ',
-                age: '62 ปี / หญิง',
-                doctor: 'พญ.นภา สุขเจริญ',
-                allergy: 'ไม่มีประวัติแพ้ยา',
+            2: {
+                id: 2, name: 'นางสาววิไล สุขใจ', bed: 'เตียง 02', hn: '6605678', an: '66/00891', age: 32, doctor: 'พญ.วิจิตรา แสงทอง',
+                dx: 'Major Depressive Disorder (F32.1)', admDate: '19 ก.ค. 2026 (2 วัน)', allergy: 'ปฏิเสธประวัติแพ้ยา', statusBadge: 'Psychiatric Eval',
+                doctorOrders: [
+                    { id: 201, type: 'continue', detail: 'Fluoxetine (20mg) 1 tab p.o. pc', doctor: 'พญ.วิจิตรา แสงทอง', time: '08:00 น.', acknowledgedBy: 'พว. สมหญิง (08:30 น.)' },
+                    { id: 202, type: 'continue', detail: 'Suicide Precaution q 15 min observation', doctor: 'พญ.วิจิตรา แสงทอง', time: '08:30 น.', acknowledgedBy: 'พว. สมหญิง (08:35 น.)' }
+                ],
                 vitals: [
-                    { time: '02:00', temp: 36.5, pr: 70, bp: '140/90' },
-                    { time: '06:00', temp: 36.6, pr: 72, bp: '138/88' },
-                    { time: '10:00', temp: 36.7, pr: 75, bp: '135/85' },
-                    { time: '14:00', temp: 36.5, pr: 71, bp: '130/82' }
+                    { time: '02:00', temp: 36.5, bp: '108/68', pr: 70, rr: 16, spo2: 99, pain: 0, nurse: 'พว. สมหญิง' },
+                    { time: '06:00', temp: 36.6, bp: '110/70', pr: 72, rr: 16, spo2: 99, pain: 0, nurse: 'พว. สมหญิง' }
                 ],
-                focusNotes: [
-                    {
-                        shift: 'เวรเช้า (07:00 - 15:00)',
-                        focus: 'ความดันโลหิตสูง (Hypertension)',
-                        time: '09:00 น.',
-                        data: 'BP = 140/90 mmHg, ไม่มีอาการเวียนศีรษะ',
-                        action: 'ดูแลให้นอนพัก จัดสิ่งแวดล้อมให้เงียบสงบ ให้ยา Amlodipine 5mg ตามแผนการรักษา',
-                        response: 'วัด BP ซ้ำเวลา 11:00 น. ได้ 135/85 mmHg',
-                        nurse: 'พว. สมหญิง'
-                    }
+                icd10List: [{ code: 'F32.1', name: 'Moderate depressive episode', type: 'Principal Dx', coder: 'พญ. วิจิตรา' }],
+                labs: [
+                    { name: 'Thyroid Stimulating Hormone (TSH)', result: '2.1', unit: 'uIU/mL', ref: '0.4 - 4.0', status: 'Normal', alert: false },
+                    { name: 'Fasting Blood Sugar (FBS)', result: '88', unit: 'mg/dL', ref: '70 - 99', status: 'Normal', alert: false }
                 ],
-                emars: [
-                    { name: 'Amlodipine 5mg 1 tab po OD', schedule: '08:00 น.', status: 'given', givenTime: '08:00 น.', nurse: 'พว. สมหญิง' },
-                    { name: 'Metformin 500mg 1 tab po pc', schedule: '12:00 น.', status: 'pending', givenTime: '-', nurse: '-' }
+                pacs: {
+                    study: 'Chest PA Upright (Routine Screen)', accession: 'RAD66-00891',
+                    icon: 'fa-solid fa-x-ray text-slate-400 text-7xl', label: '[ Normal Chest Radiograph ]',
+                    findings: 'Normal heart size. Lungs are clear without active pulmonary infiltration.',
+                    impression: 'Unremarkable chest radiograph.'
+                },
+                focusNotes: [{ shift: 'เวรเช้า (07:00 - 15:00)', focus: 'เสี่ยงต่อการทำร้ายตัวเองจากอารมณ์เศร้า', time: '09:00 น.', data: 'ผู้ป่วยเหม่อลอย สีหน้าเศร้า บ่นว่ารู้สึกไร้ค่า', action: 'จัด Suicide Precaution สังเกตพฤติกรรมใกล้ชิด เก็บของมีคม', response: 'ผู้ป่วยสงบลง ปฏิเสธความคิดทำร้ายตัวเอง', nurse: 'พว. สมหญิง' }],
+                emars: [{ name: 'Fluoxetine (20mg) 1 tab p.o. pc', schedule: '08:00 น.', status: 'pending', givenTime: '-', nurse: '-' }]
+            },
+            3: {
+                id: 3, name: 'นายวิชัย มีทรัพย์', bed: 'เตียง 03', hn: '6609999', an: '66/01122', age: 70, doctor: 'นพ.ประเสริฐ สุขใจ',
+                dx: 'Community-Acquired Pneumonia', admDate: '19 ก.ค. 2026 (2 วัน)', allergy: 'Sulfa', statusBadge: 'On O2',
+                doctorOrders: [
+                    { id: 301, type: 'continue', detail: 'Oxygen cannula 3 LPM keep SpO2 >= 95%', doctor: 'นพ.ประเสริฐ สุขใจ', time: '07:00 น.', acknowledgedBy: 'พว. สมหญิง (07:15 น.)' },
+                    { id: 302, type: 'continue', detail: 'Ceftriaxone 2 g IV drip in 30 min OD', doctor: 'นพ.ประเสริฐ สุขใจ', time: '07:30 น.', acknowledgedBy: 'พว. สมหญิง (07:40 น.)' }
                 ],
-                icd10List: [
-                    { code: 'I10', name: 'Essential (primary) hypertension', nurse: 'พว. สมหญิง' },
-                    { code: 'E11.9', name: 'Type 2 diabetes mellitus without complications', nurse: 'พว. สมหญิง' }
-                ]
+                vitals: [
+                    { time: '02:00', temp: 38.2, bp: '122/78', pr: 94, rr: 22, spo2: 94, pain: 0, nurse: 'พว. สมหญิง' },
+                    { time: '06:00', temp: 37.8, bp: '118/74', pr: 88, rr: 20, spo2: 95, pain: 0, nurse: 'พว. สมหญิง' },
+                    { time: '10:00', temp: 37.2, bp: '116/72', pr: 82, rr: 18, spo2: 98, pain: 0, nurse: 'พว. สมหญิง' }
+                ],
+                icd10List: [{ code: 'J18.9', name: 'Pneumonia, unspecified', type: 'Principal Dx', coder: 'นพ. ประเสริฐ' }],
+                labs: [
+                    { name: 'WBC (White Blood Cell)', result: '16,200', unit: 'cells/cu.mm', ref: '4,500 - 10,000', status: 'High', alert: true },
+                    { name: 'Sputum Gram Stain', result: 'Gram-positive diplococci', unit: '-', ref: 'No organism', status: 'Abnormal', alert: true }
+                ],
+                pacs: {
+                    study: 'Chest Portable AP (Pneumonia Follow-up)', accession: 'RAD66-01122',
+                    icon: 'fa-solid fa-lungs text-indigo-400 text-7xl', label: '[ Simulated Pneumonia Infiltrate Image ]',
+                    findings: 'Patchy infiltration and alveolar consolidation noted at right lower lung field.',
+                    impression: 'Right lower lobe pneumonia.'
+                },
+                focusNotes: [{ shift: 'เวรเช้า (07:00 - 15:00)', focus: 'เสี่ยงต่อภาวะพร่องออกซิเจนเนื่องจากปอดอักเสบ', time: '07:30 น.', data: 'ผู้ป่วยไอมีเสมหะ หายใจเหนื่อยเล็กน้อย SpO2 95% on RA', action: 'จัดท่านอนหัวสูง 45 องศา ดูแลให้ O2 cannula 3 LPM', response: 'ผู้ป่วยหายใจสะดวกขึ้น SpO2 ขึ้นเป็น 98%', nurse: 'พว. สมหญิง' }],
+                emars: [{ name: 'Ceftriaxone 2 g IV drip in 30 min', schedule: '09:00 น.', status: 'pending', givenTime: '-', nurse: '-' }]
             }
         };
 
-        // --- INITIALIZATION ---
+        let currentPatientId = 1;
+        let vsChartInstance = null;
+        let pacsInverted = false;
+
         window.onload = function() {
-            initChart();
-            switchPatient('P001');
-        };
-
-        function switchPatient(patientId) {
-            currentPatientId = patientId;
-
-            // Toggle active sidebar button styling
-            ['P001', 'P002'].forEach(id => {
-                const btn = document.getElementById(`btn-${id}`);
-                if (id === patientId) {
-                    btn.className = 'w-full text-left p-3 rounded-xl border transition-all flex justify-between items-center bg-teal-50 border-teal-500 shadow-sm';
-                    btn.querySelector('i').className = 'fa-solid fa-chevron-right text-teal-600';
-                } else {
-                    btn.className = 'w-full text-left p-3 rounded-xl border transition-all flex justify-between items-center bg-white border-slate-200 hover:border-slate-300';
-                    btn.querySelector('i').className = 'fa-solid fa-chevron-right text-slate-300';
-                }
-            });
-
-            // Update patient info sidebar
-            const p = patientsData[patientId];
-            document.getElementById('infoHN').innerText = p.hn;
-            document.getElementById('infoName').innerText = p.name;
-            document.getElementById('infoAge').innerText = p.age;
-            document.getElementById('infoDoctor').innerText = p.doctor;
-            document.getElementById('infoAllergy').innerText = p.allergy;
-
-            // Render Modules
-            updateChart();
+            renderPatientSidebar();
+            renderPatientHeader();
+            renderDoctorOrders();
+            renderVitalSigns();
+            renderLIS();
+            renderPACS();
+            renderICD10();
             renderFocusNotes();
             renderEMAR();
+            initChart();
+
+            document.addEventListener('click', function(e) {
+                const searchBox = document.getElementById('icdSearchInput');
+                const resultBox = document.getElementById('icdSearchResult');
+                if (searchBox && resultBox && !searchBox.contains(e.target) && !resultBox.contains(e.target)) {
+                    resultBox.classList.add('hidden');
+                }
+            });
+        };
+
+        // --- SIDEBAR & PATIENT MANAGEMENT ---
+        function renderPatientSidebar() {
+            const container = document.getElementById('patientListContainer');
+            container.innerHTML = '';
+            const keys = Object.keys(patientsData);
+            document.getElementById('patientCount').innerText = `${keys.length} เตียง`;
+
+            keys.forEach(id => {
+                const p = patientsData[id];
+                const isSelected = parseInt(id) === currentPatientId;
+                const btn = document.createElement('button');
+                btn.onclick = () => selectPatient(parseInt(id));
+                btn.id = `patientCard-${id}`;
+                btn.className = `patient-card w-full text-left p-3 hover:bg-slate-50 transition border-l-4 ${isSelected ? 'border-teal-600 bg-teal-50/50' : 'border-transparent'}`;
+                
+                btn.innerHTML = `
+                    <div class="flex justify-between items-start mb-1">
+                        <span class="font-bold text-slate-800 bg-slate-200 text-xs px-2 py-0.5 rounded">${p.bed}</span>
+                        <span class="text-xs bg-teal-100 text-teal-800 font-medium px-2 py-0.5 rounded-full">${p.statusBadge || 'Admitted'}</span>
+                    </div>
+                    <div class="font-semibold text-teal-900 text-sm">${p.name}</div>
+                    <div class="text-xs text-slate-500 mt-0.5">HN: ${p.hn} | อายุ ${p.age} ปี</div>
+                    <div class="text-xs text-slate-600 mt-1 truncate"><strong>Dx:</strong> ${p.dx}</div>
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        function selectPatient(id) {
+            currentPatientId = id;
+            renderPatientSidebar();
+            renderPatientHeader();
+            renderDoctorOrders();
+            renderVitalSigns();
+            renderLIS();
+            renderPACS();
             renderICD10();
+            renderFocusNotes();
+            renderEMAR();
+            updateChart();
+        }
+
+        function renderPatientHeader() {
+            const p = patientsData[currentPatientId];
+            if (!p) return;
+            document.getElementById('hdrName').innerText = p.name;
+            document.getElementById('hdrBed').innerText = p.bed;
+            document.getElementById('hdrHN').innerText = p.hn;
+            document.getElementById('hdrAN').innerText = p.an;
+            document.getElementById('hdrAge').innerText = p.age;
+            document.getElementById('hdrDx').innerText = p.dx;
+            document.getElementById('hdrAdmDate').innerText = p.admDate;
+            document.getElementById('hdrDoctor').innerText = p.doctor || 'นพ.ประเสริฐ สุขใจ';
+            document.getElementById('hdrAllergy').innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1"></i> แพ้ยา: ${p.allergy}`;
+        }
+
+        function openAdmitPatientModal() { document.getElementById('admitPatientModal').classList.remove('hidden'); }
+        function closeAdmitPatientModal() { document.getElementById('admitPatientModal').classList.add('hidden'); }
+
+        function saveAdmitPatient() {
+            const bed = document.getElementById('admBed').value.trim() || 'เตียงใหม่';
+            const name = document.getElementById('admName').value.trim() || 'ผู้ป่วยใหม่';
+            const hn = document.getElementById('admHN').value.trim() || '66' + Math.floor(1000 + Math.random() * 9000);
+            const an = document.getElementById('admAN').value.trim() || '66/' + Math.floor(1000 + Math.random() * 9000);
+            const age = parseInt(document.getElementById('admAge').value) || 30;
+            const allergy = document.getElementById('admAllergy').value.trim() || 'ปฏิเสธประวัติแพ้ยา';
+            const dx = document.getElementById('admDx').value.trim() || 'Observation';
+
+            const newId = Date.now();
+            patientsData[newId] = {
+                id: newId, name, bed, hn, an, age, doctor: 'นพ.ประเสริฐ สุขใจ',
+                dx, admDate: 'วันนี้', allergy, statusBadge: 'New Admit',
+                doctorOrders: [],
+                vitals: [{ time: '10:00', temp: 37.0, bp: '120/80', pr: 80, rr: 18, spo2: 98, pain: 0, nurse: 'พว. สมหญิง' }],
+                icd10List: [],
+                labs: [],
+                pacs: {
+                    study: 'Chest PA Upright', accession: 'RAD66-' + Math.floor(1000 + Math.random() * 9000),
+                    icon: 'fa-solid fa-x-ray text-slate-400 text-7xl', label: '[ Digital Radiograph ]',
+                    findings: 'Normal findings.', impression: 'Unremarkable.'
+                },
+                focusNotes: [],
+                emars: []
+            };
+
+            closeAdmitPatientModal();
+            selectPatient(newId);
+        }
+
+        function openEditPatientModal() {
+            const p = patientsData[currentPatientId];
+            document.getElementById('editName').value = p.name;
+            document.getElementById('editBed').value = p.bed;
+            document.getElementById('editHN').value = p.hn;
+            document.getElementById('editAN').value = p.an;
+            document.getElementById('editAge').value = p.age;
+            document.getElementById('editAllergy').value = p.allergy;
+            document.getElementById('editDx').value = p.dx;
+            document.getElementById('editPatientModal').classList.remove('hidden');
+        }
+
+        function closeEditPatientModal() { document.getElementById('editPatientModal').classList.add('hidden'); }
+
+        function saveEditPatient() {
+            const p = patientsData[currentPatientId];
+            p.name = document.getElementById('editName').value;
+            p.bed = document.getElementById('editBed').value;
+            p.hn = document.getElementById('editHN').value;
+            p.an = document.getElementById('editAN').value;
+            p.age = parseInt(document.getElementById('editAge').value) || p.age;
+            p.allergy = document.getElementById('editAllergy').value;
+            p.dx = document.getElementById('editDx').value;
+
+            renderPatientSidebar();
+            renderPatientHeader();
+            closeEditPatientModal();
+        }
+
+        function switchTab(tabName) {
+            ['orders', 'vitals', 'lis', 'pacs', 'icd10', 'focusnote', 'emar'].forEach(t => {
+                const el = document.getElementById(`content-${t}`);
+                if (el) el.classList.add('hidden');
+                const btn = document.getElementById(`tab-${t}`);
+                if (btn) {
+                    btn.classList.remove('text-teal-700', 'border-teal-600', 'font-semibold');
+                    btn.classList.add('text-slate-600', 'border-transparent');
+                }
+            });
+            document.getElementById(`content-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-slate-600', 'border-transparent');
+                activeBtn.classList.add('text-teal-700', 'border-teal-600', 'font-semibold');
+            }
+        }
+
+        // --- DOCTOR'S ORDERS MODULE ---
+        function renderDoctorOrders() {
+            const orders = patientsData[currentPatientId].doctorOrders || [];
+            const oneDayContainer = document.getElementById('oneDayOrderContainer');
+            const continueContainer = document.getElementById('continueOrderContainer');
+
+            const oneDayList = orders.filter(o => o.type === 'one-day');
+            const continueList = orders.filter(o => o.type === 'continue');
+
+            document.getElementById('countOneDay').innerText = `${oneDayList.length} รายการ`;
+            document.getElementById('countContinue').innerText = `${continueList.length} รายการ`;
+
+            oneDayContainer.innerHTML = oneDayList.length === 0 ? '<div class="p-3 text-slate-400 text-center">ไม่มีคำสั่งการรักษา One-day</div>' : '';
+            continueContainer.innerHTML = continueList.length === 0 ? '<div class="p-3 text-slate-400 text-center">ไม่มีคำสั่งการรักษา Continue</div>' : '';
+
+            orders.forEach((o, index) => {
+                const card = document.createElement('div');
+                card.className = 'p-3 hover:bg-slate-50 transition rounded-lg space-y-1.5 border border-slate-100';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <span class="font-semibold text-slate-800">${o.detail}</span>
+                        <button onclick="removeDoctorOrder(${o.id})" class="text-slate-400 hover:text-rose-600 ml-2"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                    <div class="text-[11px] text-slate-500 flex justify-between items-center flex-wrap gap-1">
+                        <span>สั่งโดย: <strong class="text-slate-700">${o.doctor}</strong> (${o.time})</span>
+                        ${o.acknowledgedBy 
+                            ? `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px]"><i class="fa-solid fa-check mr-1"></i>รับคำสั่งแล้ว: ${o.acknowledgedBy}</span>`
+                            : `<button onclick="acknowledgeOrder(${o.id})" class="bg-amber-500 hover:bg-amber-600 text-white px-2 py-0.5 rounded text-[10px] font-medium transition">รับคำสั่งการรักษา (Take off)</button>`
+                        }
+                    </div>
+                `;
+
+                if (o.type === 'one-day') {
+                    oneDayContainer.appendChild(card);
+                } else {
+                    continueContainer.appendChild(card);
+                }
+            });
+        }
+
+        function openAddOrderModal() { document.getElementById('addOrderModal').classList.remove('hidden'); }
+        function closeAddOrderModal() { document.getElementById('addOrderModal').classList.add('hidden'); }
+
+        function saveDoctorOrder() {
+            const type = document.getElementById('ordType').value;
+            const detail = document.getElementById('ordDetail').value.trim();
+            const doctor = document.getElementById('ordDoctor').value.trim() || 'นพ.ประเสริฐ สุขใจ';
+
+            if (!detail) { alert('กรุณากรอกรายละเอียดคำสั่งการรักษา'); return; }
+
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
+
+            patientsData[currentPatientId].doctorOrders.push({
+                id: Date.now(), type, detail, doctor, time: timeStr, acknowledgedBy: null
+            });
+
+            document.getElementById('ordDetail').value = '';
+            renderDoctorOrders();
+            closeAddOrderModal();
+        }
+
+        function acknowledgeOrder(orderId) {
+            const orders = patientsData[currentPatientId].doctorOrders;
+            const target = orders.find(o => o.id === orderId);
+            if (target) {
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
+                target.acknowledgedBy = `พว. สมหญิง (${timeStr})`;
+                renderDoctorOrders();
+            }
+        }
+
+        function removeDoctorOrder(orderId) {
+            patientsData[currentPatientId].doctorOrders = patientsData[currentPatientId].doctorOrders.filter(o => o.id !== orderId);
+            renderDoctorOrders();
+        }
+
+        // --- VITAL SIGNS MODULE ---
+        function renderVitalSigns() {
+            const vitals = patientsData[currentPatientId].vitals || [];
+            const tbody = document.getElementById('vitalTableBody');
+            tbody.innerHTML = '';
+            if (vitals.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-slate-400">ยังไม่มีบันทึกสัญญาณชีพ</td></tr>`;
+                return;
+            }
+            vitals.forEach((v, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-3 py-2 font-medium">${v.time} น.</td>
+                    <td class="px-3 py-2 font-semibold text-red-600">${v.temp}</td>
+                    <td class="px-3 py-2">${v.bp}</td>
+                    <td class="px-3 py-2 font-semibold text-blue-600">${v.pr}</td>
+                    <td class="px-3 py-2">${v.rr}</td>
+                    <td class="px-3 py-2">${v.spo2}%</td>
+                    <td class="px-3 py-2">${v.pain}</td>
+                    <td class="px-3 py-2 text-slate-500">${v.nurse}</td>
+                    <td class="px-3 py-2 text-center">
+                        <button onclick="removeVitalSign(${index})" class="text-rose-500 hover:text-rose-700" title="ลบ"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openAddVitalModal() { document.getElementById('addVitalModal').classList.remove('hidden'); }
+        function closeAddVitalModal() { document.getElementById('addVitalModal').classList.add('hidden'); }
+
+        function saveVitalSign() {
+            const time = document.getElementById('newTime').value;
+            const temp = parseFloat(document.getElementById('newTemp').value);
+            const bp = document.getElementById('newBP').value;
+            const pr = parseInt(document.getElementById('newPR').value);
+
+            if (!time || isNaN(temp) || !bp || isNaN(pr)) {
+                alert("กรุณากรอกข้อมูลสัญญาณชีพให้ครบถ้วน");
+                return;
+            }
+
+            patientsData[currentPatientId].vitals.push({
+                time, temp, bp, pr, rr: 18, spo2: 98, pain: 2, nurse: 'พว. สมหญิง'
+            });
+            renderVitalSigns();
+            updateChart();
+            closeAddVitalModal();
+        }
+
+        function removeVitalSign(index) {
+            patientsData[currentPatientId].vitals.splice(index, 1);
+            renderVitalSigns();
+            updateChart();
+        }
+
+        // --- LIS MODULE ---
+        function renderLIS() {
+            const labs = patientsData[currentPatientId].labs || [];
+            const tbody = document.getElementById('lisTableBody');
+            tbody.innerHTML = '';
+
+            let hasCritical = labs.some(l => l.alert);
+            document.getElementById('labCriticalStatus').innerText = hasCritical ? 'มีค่าผิดปกติ (Abnormal Value)' : 'ปกติทุกรายการ (Normal)';
+            document.getElementById('labCriticalStatus').className = hasCritical ? 'font-bold text-xs text-red-600' : 'font-bold text-xs text-emerald-600';
+
+            if (labs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-slate-400">ยังไม่มีข้อมูลรายงานผล Lab</td></tr>`;
+                return;
+            }
+
+            labs.forEach((l, index) => {
+                const tr = document.createElement('tr');
+                tr.className = l.alert ? 'bg-red-50/40 hover:bg-red-50' : 'hover:bg-slate-50';
+                tr.innerHTML = `
+                    <td class="px-3 py-2.5 font-semibold ${l.alert ? 'text-red-950' : 'text-slate-800'}">${l.name}</td>
+                    <td class="px-3 py-2.5 font-bold ${l.alert ? 'text-red-600' : 'text-slate-700'}">${l.result}</td>
+                    <td class="px-3 py-2.5 text-slate-500">${l.unit}</td>
+                    <td class="px-3 py-2.5 text-slate-500">${l.ref}</td>
+                    <td class="px-3 py-2.5 text-center">
+                        ${l.alert 
+                            ? `<span class="bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded text-[10px]"><i class="fa-solid fa-triangle-exclamation mr-1"></i>${l.status}</span>` 
+                            : `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px]">${l.status}</span>`}
+                    </td>
+                    <td class="px-3 py-2.5 text-center">
+                        <button onclick="removeLabItem(${index})" class="text-rose-500 hover:text-rose-700" title="ลบ"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openAddLabModal() { document.getElementById('addLabModal').classList.remove('hidden'); }
+        function closeAddLabModal() { document.getElementById('addLabModal').classList.add('hidden'); }
+
+        function saveNewLabItem() {
+            const name = document.getElementById('labTestName').value.trim();
+            const result = document.getElementById('labResult').value.trim();
+            const unit = document.getElementById('labUnit').value.trim();
+            const ref = document.getElementById('labRef').value.trim();
+            const status = document.getElementById('labStatus').value;
+            const alert = document.getElementById('labAlert').checked;
+
+            if (!name || !result) { alert('กรุณากรอกชื่อรายการตรวจและผลการตรวจ'); return; }
+
+            patientsData[currentPatientId].labs.push({ name, result, unit, ref, status, alert });
+            
+            document.getElementById('labTestName').value = '';
+            document.getElementById('labResult').value = '';
+            document.getElementById('labUnit').value = '';
+            document.getElementById('labRef').value = '';
+            document.getElementById('labAlert').checked = false;
+
+            renderLIS();
+            closeAddLabModal();
+        }
+
+        function removeLabItem(index) {
+            patientsData[currentPatientId].labs.splice(index, 1);
+            renderLIS();
+        }
+
+        // --- PACS MODULE ---
+        function renderPACS() {
+            const pacs = patientsData[currentPatientId].pacs;
+            document.getElementById('pacsImgStudy').innerText = `Study: ${pacs.study}`;
+            document.getElementById('pacsAccNo').innerText = pacs.accession;
+            document.getElementById('pacsReportFindings').innerText = pacs.findings;
+            document.getElementById('pacsReportImpression').innerText = pacs.impression;
+            document.getElementById('pacsImageLabel').innerText = pacs.label;
+            document.getElementById('pacsGraphicSvg').innerHTML = `<i class="${pacs.icon}"></i>`;
+        }
+
+        function togglePacsInvert() {
+            const container = document.getElementById('pacsGraphicContainer');
+            pacsInverted = !pacsInverted;
+            container.style.filter = pacsInverted ? 'invert(1)' : 'none';
+        }
+
+        function openEditPacsModal() {
+            const pacs = patientsData[currentPatientId].pacs;
+            document.getElementById('pacsEditStudy').value = pacs.study;
+            document.getElementById('pacsEditAcc').value = pacs.accession;
+            document.getElementById('pacsEditFindings').value = pacs.findings;
+            document.getElementById('pacsEditImpression').value = pacs.impression;
+            document.getElementById('editPacsModal').classList.remove('hidden');
+        }
+
+        function closeEditPacsModal() { document.getElementById('editPacsModal').classList.add('hidden'); }
+
+        function saveEditPacs() {
+            const pacs = patientsData[currentPatientId].pacs;
+            pacs.study = document.getElementById('pacsEditStudy').value;
+            pacs.accession = document.getElementById('pacsEditAcc').value;
+            pacs.findings = document.getElementById('pacsEditFindings').value;
+            pacs.impression = document.getElementById('pacsEditImpression').value;
+            renderPACS();
+            closeEditPacsModal();
         }
 
         // --- ICD-10 MODULE ---
         function renderICD10() {
-            const list = patientsData[currentPatientId].icd10List || [];
-            const container = document.getElementById('icdList');
-            container.innerHTML = '';
-
-            if (list.length === 0) {
-                container.innerHTML = `<div class="text-slate-400 text-xs text-center py-3 bg-slate-50 rounded-lg">ไม่มีรหัส ICD-10</div>`;
+            const icdList = patientsData[currentPatientId].icd10List || [];
+            const tbody = document.getElementById('icdTableBody');
+            document.getElementById('icdCount').innerText = icdList.length;
+            tbody.innerHTML = '';
+            if (icdList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-slate-400">ยังไม่มีข้อมูลรหัสโรค</td></tr>`;
                 return;
             }
-
-            list.forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = 'flex justify-between items-center bg-slate-50 border border-slate-200 p-2.5 rounded-lg text-xs';
-                div.innerHTML = `
-                    <div class="flex items-center gap-2">
-                        <span class="bg-teal-600 text-white font-bold px-2 py-0.5 rounded text-[11px]">${item.code}</span>
-                        <span class="font-medium text-slate-700">${item.name}</span>
-                    </div>
-                    <button onclick="removeICD10(${index})" class="text-rose-500 hover:text-rose-700"><i class="fa-solid fa-trash-can"></i></button>
+            icdList.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-3 py-2 font-bold text-teal-900">${item.code}</td>
+                    <td class="px-3 py-2 font-medium text-slate-800">${item.name}</td>
+                    <td class="px-3 py-2"><span class="px-2 py-0.5 rounded text-[11px] bg-teal-100 text-teal-800">${item.type}</span></td>
+                    <td class="px-3 py-2 text-slate-500">${item.coder}</td>
+                    <td class="px-3 py-2 text-center">
+                        <button onclick="removeICD10(${index})" class="text-rose-500 hover:text-rose-700" title="ลบ"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
                 `;
-                container.appendChild(div);
+                tbody.appendChild(tr);
             });
         }
 
-        function searchICD10(val) {
-            const resBox = document.getElementById('icdSearchResults');
-            if (!val.trim()) {
-                resBox.classList.add('hidden');
-                return;
-            }
+        function searchICD10() {
+            const query = document.getElementById('icdSearchInput').value.toLowerCase().trim();
+            const resultBox = document.getElementById('icdSearchResult');
+            if (!query) { resultBox.classList.add('hidden'); return; }
 
-            const filtered = mockIcdDatabase.filter(item => 
-                item.code.toLowerCase().includes(val.toLowerCase()) || 
-                item.name.toLowerCase().includes(val.toLowerCase())
-            );
-
-            if (filtered.length === 0) {
-                resBox.innerHTML = `<div class="p-2.5 text-xs text-slate-400">ไม่พบรหัส ICD-10 ที่ตรงกัน</div>`;
+            const matches = icd10Database.filter(d => d.code.toLowerCase().includes(query) || d.name.toLowerCase().includes(query));
+            if (matches.length === 0) {
+                resultBox.innerHTML = `<div class="p-2 text-xs text-slate-400 text-center">ไม่พบรหัสตรงกัน (สามารถบันทึกโดยพิมพ์เองได้)</div>`;
             } else {
-                resBox.innerHTML = filtered.map(item => `
-                    <div onclick="selectICD10('${item.code}', '${item.name}')" class="p-2.5 hover:bg-teal-50 cursor-pointer border-b border-slate-100 text-xs flex justify-between">
-                        <span class="font-bold text-teal-700">${item.code}</span>
-                        <span class="text-slate-600">${item.name}</span>
+                resultBox.innerHTML = matches.map(m => `
+                    <div onclick="selectICD10Result('${m.code}', '${m.name.replace(/'/g, "\\'")}')" class="p-2 text-xs hover:bg-teal-50 cursor-pointer border-b border-slate-100 flex justify-between">
+                        <span class="font-bold text-teal-800">${m.code}</span>
+                        <span class="text-slate-600 truncate ml-2">${m.name}</span>
                     </div>
                 `).join('');
             }
-            resBox.classList.remove('hidden');
+            resultBox.classList.remove('hidden');
         }
 
-        function selectICD10(code, name) {
+        function selectICD10Result(code, name) {
             document.getElementById('icdSearchInput').value = `${code} - ${name}`;
             document.getElementById('selectedIcdCode').value = code;
             document.getElementById('selectedIcdName').value = name;
-            document.getElementById('icdSearchResults').classList.add('hidden');
+            document.getElementById('icdSearchResult').classList.add('hidden');
         }
 
-        function addICD10() {
-            const code = document.getElementById('selectedIcdCode').value;
-            const name = document.getElementById('selectedIcdName').value;
+        function addSelectedICD10() {
+            let code = document.getElementById('selectedIcdCode').value;
+            let name = document.getElementById('selectedIcdName').value;
+            const type = document.getElementById('icdDiagType').value;
+            const rawInput = document.getElementById('icdSearchInput').value;
 
-            if (!code || !name) {
-                alert('กรุณาเลือกรายการ ICD-10 จากตัวเลือกค้นหา');
-                return;
+            if (!code && rawInput) {
+                const parts = rawInput.split('-');
+                code = parts[0].trim().toUpperCase();
+                name = parts[1] ? parts[1].trim() : 'Diagnosis Condition';
             }
 
+            if (!code) { alert('กรุณาเลือกรหัสโรค ICD-10 ก่อนลงบันทึก'); return; }
+
             patientsData[currentPatientId].icd10List.push({
-                code, name, nurse: 'พว. สมหญิง'
+                code: code, name: name, type: type, coder: 'พว. สมหญิง (พยาบาล)'
             });
 
             document.getElementById('icdSearchInput').value = '';
             document.getElementById('selectedIcdCode').value = '';
             document.getElementById('selectedIcdName').value = '';
-
             renderICD10();
         }
 
@@ -432,49 +1300,30 @@
             renderICD10();
         }
 
-        // --- FOCUS NURSING NOTE (FDAR) MODULE ---
+        // --- FOCUS NOTES MODULE ---
         function renderFocusNotes() {
             const notes = patientsData[currentPatientId].focusNotes || [];
             const container = document.getElementById('focusNoteList');
             container.innerHTML = '';
-
             if (notes.length === 0) {
-                container.innerHTML = `<div class="p-6 text-center text-slate-400 bg-slate-50 border border-slate-200 rounded-xl">ยังไม่มีบันทึกทางการพยาบาล (Focus Note)</div>`;
+                container.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs">ยังไม่มีบันทึก Focus Note</div>`;
                 return;
             }
-
-            notes.forEach((n, index) => {
+            notes.forEach((n, idx) => {
                 const card = document.createElement('div');
-                card.className = 'bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3';
+                card.className = 'border border-slate-200 rounded-xl p-3 bg-white space-y-1 text-xs shadow-sm relative group';
                 card.innerHTML = `
-                    <div class="flex justify-between items-center border-b border-slate-100 pb-2 flex-wrap gap-2">
+                    <div class="flex justify-between font-bold text-teal-800 border-b pb-1">
+                        <span>Focus: ${n.focus} (${n.shift})</span>
                         <div class="flex items-center gap-2">
-                            <span class="bg-teal-100 text-teal-800 text-xs font-bold px-2.5 py-0.5 rounded-full">${n.shift || 'เวรเช้า'}</span>
-                            <h4 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-bullseye text-teal-600 mr-1"></i> Focus: ${n.focus}</h4>
-                        </div>
-                        <div class="flex items-center gap-2 text-xs">
-                            <span class="text-slate-400"><i class="fa-regular fa-clock mr-1"></i>${n.time || '08:00 น.'}</span>
-                            <button onclick="editFocusNote(${index})" class="text-teal-600 hover:text-teal-800 ml-2 font-medium" title="แก้ไข"><i class="fa-solid fa-pen-to-square"></i> แก้ไข</button>
-                            <button onclick="removeFocusNote(${index})" class="text-rose-500 hover:text-rose-700 ml-1 font-medium" title="ลบ"><i class="fa-solid fa-trash-can"></i> ลบ</button>
+                            <span class="text-slate-400 font-normal">${n.time} | โดย ${n.nurse}</span>
+                            <button onclick="editFocusNote(${idx})" class="text-teal-600 hover:text-teal-800" title="แก้ไข"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="removeFocusNote(${idx})" class="text-rose-500 hover:text-rose-700" title="ลบ"><i class="fa-solid fa-trash-can"></i></button>
                         </div>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-                        <div class="bg-red-50/50 p-2.5 rounded-lg border border-red-100">
-                            <strong class="text-red-700 block mb-1 font-semibold"><i class="fa-solid fa-database mr-1"></i> Data (D)</strong>
-                            <p class="text-slate-700 whitespace-pre-line leading-relaxed">${n.data || '-'}</p>
-                        </div>
-                        <div class="bg-blue-50/50 p-2.5 rounded-lg border border-blue-100">
-                            <strong class="text-blue-700 block mb-1 font-semibold"><i class="fa-solid fa-hand-holding-medical mr-1"></i> Action (A)</strong>
-                            <p class="text-slate-700 whitespace-pre-line leading-relaxed">${n.action || '-'}</p>
-                        </div>
-                        <div class="bg-emerald-50/50 p-2.5 rounded-lg border border-emerald-100">
-                            <strong class="text-emerald-700 block mb-1 font-semibold"><i class="fa-solid fa-square-check mr-1"></i> Response (R)</strong>
-                            <p class="text-slate-700 whitespace-pre-line leading-relaxed">${n.response || '-'}</p>
-                        </div>
-                    </div>
-                    <div class="text-right text-[11px] text-slate-400 pt-1 border-t border-slate-50">
-                        ผู้บันทึก: <span class="font-medium text-slate-600">${n.nurse || 'พว. สมหญิง'}</span>
-                    </div>
+                    <p class="pt-1"><strong class="text-red-700">Data (D):</strong> ${n.data}</p>
+                    <p><strong class="text-blue-700">Action (A):</strong> ${n.action}</p>
+                    <p><strong class="text-emerald-700">Response (R):</strong> ${n.response}</p>
                 `;
                 container.appendChild(card);
             });
@@ -486,21 +1335,27 @@
             const data = document.getElementById('fnData').value.trim();
             const action = document.getElementById('fnAction').value.trim();
             const response = document.getElementById('fnResponse').value.trim();
-            const editIndex = parseInt(document.getElementById('editingFocusNoteIndex').value);
+            const editIdx = parseInt(document.getElementById('editingFocusNoteIndex').value);
 
-            if (!focus) { alert('กรุณากรอก Focus Problem (ข้อวินิจฉัย/ปัญหา)'); return; }
+            if (!focus || !data) {
+                alert('กรุณากรอก Focus Problem และ Data (D) ก่อนบันทึก');
+                return;
+            }
 
             const now = new Date();
             const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
 
-            const noteObj = {
-                shift, focus, time: timeStr, data, action, response, nurse: 'พว. สมหญิง'
-            };
-
-            if (editIndex >= 0) {
-                patientsData[currentPatientId].focusNotes[editIndex] = noteObj;
+            if (editIdx >= 0) {
+                const note = patientsData[currentPatientId].focusNotes[editIdx];
+                note.focus = focus;
+                note.shift = shift;
+                note.data = data;
+                note.action = action;
+                note.response = response;
             } else {
-                patientsData[currentPatientId].focusNotes.unshift(noteObj);
+                patientsData[currentPatientId].focusNotes.unshift({
+                    shift, focus, time: timeStr, data, action, response, nurse: 'พว. สมหญิง'
+                });
             }
 
             cancelEditFocusNote();
@@ -509,27 +1364,24 @@
 
         function editFocusNote(index) {
             const note = patientsData[currentPatientId].focusNotes[index];
-            if (!note) return;
-
-            document.getElementById('fnFocus').value = note.focus || '';
-            document.getElementById('fnShift').value = note.shift || 'เวรเช้า (07:00 - 15:00)';
-            document.getElementById('fnData').value = note.data || '';
-            document.getElementById('fnAction').value = note.action || '';
-            document.getElementById('fnResponse').value = note.response || '';
             document.getElementById('editingFocusNoteIndex').value = index;
+            document.getElementById('fnFocus').value = note.focus;
+            document.getElementById('fnShift').value = note.shift;
+            document.getElementById('fnData').value = note.data;
+            document.getElementById('fnAction').value = note.action;
+            document.getElementById('fnResponse').value = note.response;
 
-            document.getElementById('btnSaveFocusNote').innerHTML = '<i class="fa-solid fa-check"></i> อัปเดต Focus Note';
+            document.getElementById('btnSaveFocusNote').innerHTML = `<i class="fa-solid fa-check"></i> ปรับปรุง Focus Note`;
             document.getElementById('btnCancelFocusNote').classList.remove('hidden');
         }
 
         function cancelEditFocusNote() {
+            document.getElementById('editingFocusNoteIndex').value = "-1";
             document.getElementById('fnFocus').value = '';
             document.getElementById('fnData').value = '';
             document.getElementById('fnAction').value = '';
             document.getElementById('fnResponse').value = '';
-            document.getElementById('editingFocusNoteIndex').value = '-1';
-
-            document.getElementById('btnSaveFocusNote').innerHTML = '<i class="fa-solid fa-paper-plane"></i> บันทึก Focus Note';
+            document.getElementById('btnSaveFocusNote').innerHTML = `<i class="fa-solid fa-paper-plane"></i> บันทึก Focus Note`;
             document.getElementById('btnCancelFocusNote').classList.add('hidden');
         }
 
@@ -543,35 +1395,42 @@
             const emars = patientsData[currentPatientId].emars || [];
             const tbody = document.getElementById('emarTableBody');
             tbody.innerHTML = '';
-
             if (emars.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-slate-400">ยังไม่มีรายการสั่งยาใน eMAR</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-slate-400">ไม่มีรายการยาในระบบ eMAR</td></tr>`;
                 return;
             }
-
-            emars.forEach((m, index) => {
+            emars.forEach((m, idx) => {
                 const tr = document.createElement('tr');
                 const isGiven = m.status === 'given';
-                tr.className = isGiven ? 'bg-emerald-50/30' : 'hover:bg-slate-50';
+                tr.className = isGiven ? 'bg-emerald-50/30' : '';
                 tr.innerHTML = `
-                    <td class="px-3 py-2.5 font-bold text-slate-800">${m.name}</td>
-                    <td class="px-3 py-2.5 text-slate-600">${m.schedule}</td>
-                    <td class="px-3 py-2.5">
+                    <td class="px-3 py-2 font-semibold ${isGiven ? 'text-emerald-950' : 'text-slate-800'}">${m.name}</td>
+                    <td class="px-3 py-2">${m.schedule}</td>
+                    <td class="px-3 py-2">
                         ${isGiven 
-                            ? `<span class="bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded text-[10px]"><i class="fa-solid fa-circle-check mr-1"></i>บริหารยาแล้ว</span>`
-                            : `<span class="bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded text-[10px]"><i class="fa-solid fa-clock mr-1"></i>รอการบริหารยา</span>`}
+                            ? `<span class="bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full text-[10px]"><i class="fa-solid fa-check mr-1"></i>ให้ยาแล้ว</span>`
+                            : `<span class="bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full text-[10px]"><i class="fa-solid fa-clock mr-1"></i>รอการให้ยา</span>`}
                     </td>
-                    <td class="px-3 py-2.5 text-slate-600">${m.givenTime}</td>
-                    <td class="px-3 py-2.5 text-slate-500">${m.nurse}</td>
-                    <td class="px-3 py-2.5 text-center flex justify-center gap-1">
-                        ${!isGiven 
-                            ? `<button onclick="administerMedication(${index})" class="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] px-2 py-1 rounded font-medium transition shadow-sm">ให้ยา</button>`
-                            : `<button onclick="resetMedication(${index})" class="bg-slate-200 hover:bg-slate-300 text-slate-600 text-[10px] px-2 py-1 rounded transition">รีเซ็ต</button>`}
-                        <button onclick="removeMedication(${index})" class="text-rose-500 hover:text-rose-700 px-1" title="ลบ"><i class="fa-solid fa-trash-can"></i></button>
+                    <td class="px-3 py-2">${m.givenTime}</td>
+                    <td class="px-3 py-2">${m.nurse}</td>
+                    <td class="px-3 py-2 text-center flex justify-center gap-2">
+                        ${isGiven 
+                            ? `<span class="text-xs text-slate-400">เสร็จสิ้น</span>`
+                            : `<button onclick="giveMedication(${idx})" class="bg-teal-600 hover:bg-teal-700 text-white px-2 py-1 rounded text-[10px] font-medium shadow-sm transition">บันทึกให้ยา</button>`}
+                        <button onclick="removeMedication(${idx})" class="text-rose-500 hover:text-rose-700 ml-1" title="ลบรายการยา"><i class="fa-solid fa-trash-can"></i></button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        function giveMedication(idx) {
+            const m = patientsData[currentPatientId].emars[idx];
+            m.status = 'given';
+            m.givenTime = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
+            m.nurse = 'พว. สมหญิง';
+            renderEMAR();
+            alert(`✅ บันทึกการบริหารยา ${m.name} เรียบร้อยแล้ว`);
         }
 
         function openAddMedModal() { document.getElementById('addMedModal').classList.remove('hidden'); }
@@ -581,7 +1440,7 @@
             const name = document.getElementById('medName').value.trim();
             const schedule = document.getElementById('medSchedule').value.trim() || '08:00 น.';
 
-            if (!name) { alert('กรุณากรอกชื่อยา ขนาดยา และวิธีใช้'); return; }
+            if (!name) { alert('กรุณากรอกชื่อยาและขนาดยา'); return; }
 
             patientsData[currentPatientId].emars.push({
                 name, schedule, status: 'pending', givenTime: '-', nurse: '-'
@@ -593,110 +1452,66 @@
             closeAddMedModal();
         }
 
-        function administerMedication(index) {
-            const m = patientsData[currentPatientId].emars[index];
-            if (m) {
-                const now = new Date();
-                m.status = 'given';
-                m.givenTime = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
-                m.nurse = 'พว. สมหญิง';
-                renderEMAR();
-            }
-        }
-
-        function resetMedication(index) {
-            const m = patientsData[currentPatientId].emars[index];
-            if (m) {
-                m.status = 'pending';
-                m.givenTime = '-';
-                m.nurse = '-';
-                renderEMAR();
-            }
-        }
-
-        function removeMedication(index) {
-            patientsData[currentPatientId].emars.splice(index, 1);
+        function removeMedication(idx) {
+            patientsData[currentPatientId].emars.splice(idx, 1);
             renderEMAR();
         }
 
-        function simulateBarcodeScan() {
-            const emars = patientsData[currentPatientId].emars;
-            const pendingIndex = emars.findIndex(m => m.status === 'pending');
+        function simulateBarcodeScan() { alert("✅ สแกนป้ายข้อมือผู้ป่วย + ซองยาเรียบร้อย (Double Check Passed)"); }
 
-            if (pendingIndex !== -1) {
-                alert(`[Barcode Scanner] สแกนสำเร็จ!\n- ตรวจพบป้ายข้อมือ: ${patientsData[currentPatientId].name}\n- ตรวจพบยา: ${emars[pendingIndex].name}\n\nระบบทำการบันทึกการบริหารยาให้อัตโนมัติ`);
-                administerMedication(pendingIndex);
-            } else {
-                alert('[Barcode Scanner] สแกนสำเร็จ!\n- ป้ายข้อมือผู้ป่วยถูกต้อง\n- ไม่พบรายการยาที่รอดำเนินการในรอบเวลานี้');
-            }
-        }
-
-        // --- GRAPHIC SHEET (CHART.JS) ---
+        // --- GRAPHIC SHEET CHART LOGIC ---
         function initChart() {
             const ctx = document.getElementById('vsChart').getContext('2d');
             const p = patientsData[currentPatientId];
-            const labels = p.vitals.map(v => v.time + ' น.');
-            const temps = p.vitals.map(v => v.temp);
-            const pulses = p.vitals.map(v => v.pr);
-
             vsChartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels: p.vitals.map(v => v.time + ' น.'),
                     datasets: [
-                        {
-                            label: 'จุดชีพจร (Pulse Rate - bpm)',
-                            data: pulses,
-                            borderColor: '#0284c7',
-                            backgroundColor: '#0284c7',
-                            yAxisID: 'yPR',
-                            tension: 0.2,
-                            pointStyle: 'circle',
+                        { 
+                            label: 'Temp อุณหภูมิ (°C)', 
+                            data: p.vitals.map(v => v.temp), 
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
                             pointRadius: 5,
-                            pointHoverRadius: 7
-                        },
-                        {
-                            label: 'อุณหภูมิ (Temperature - °C)',
-                            data: temps,
-                            borderColor: '#dc2626',
-                            backgroundColor: '#dc2626',
+                            pointHoverRadius: 7,
+                            pointBackgroundColor: '#ef4444',
                             yAxisID: 'yTemp',
-                            tension: 0.2,
-                            pointStyle: 'rectRot',
+                            tension: 0.2
+                        },
+                        { 
+                            label: 'Pulse ชีพจร (bpm)', 
+                            data: p.vitals.map(v => v.pr), 
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
                             pointRadius: 6,
-                            pointHoverRadius: 8
+                            pointStyle: 'circle',
+                            pointHoverRadius: 8,
+                            pointBackgroundColor: '#2563eb',
+                            yAxisID: 'yPulse',
+                            tension: 0.2
                         }
                     ]
                 },
-                options: {
-                    responsive: true,
+                options: { 
+                    responsive: true, 
                     maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
                     scales: {
-                        yPR: {
-                            type: 'linear',
-                            display: true,
-                            position: 'left',
-                            title: { display: true, text: 'Pulse Rate (bpm)', color: '#0284c7', font: { family: 'Prompt', size: 11 } },
-                            min: 50,
-                            max: 130,
-                            grid: { color: '#f1f5f9' }
-                        },
                         yTemp: {
                             type: 'linear',
-                            display: true,
-                            position: 'right',
-                            title: { display: true, text: 'Temperature (°C)', color: '#dc2626', font: { family: 'Prompt', size: 11 } },
-                            min: 35.0,
-                            max: 40.0,
-                            grid: { drawOnChartArea: false }
+                            position: 'left',
+                            title: { display: true, text: 'Temperature (°C)', color: '#ef4444' },
+                            min: 35,
+                            max: 41
                         },
-                        x: {
-                            ticks: { font: { family: 'Prompt', size: 11 } }
+                        yPulse: {
+                            type: 'linear',
+                            position: 'right',
+                            title: { display: true, text: 'Pulse Rate (bpm)', color: '#2563eb' },
+                            min: 40,
+                            max: 140,
+                            grid: { drawOnChartArea: false }
                         }
-                    },
-                    plugins: {
-                        legend: { labels: { font: { family: 'Prompt', size: 12 } } }
                     }
                 }
             });
@@ -705,17 +1520,13 @@
         function updateChart() {
             if (!vsChartInstance) return;
             const p = patientsData[currentPatientId];
-            if (!p) return;
-
-            const labels = p.vitals.map(v => v.time + ' น.');
-            const temps = p.vitals.map(v => v.temp);
-            const pulses = p.vitals.map(v => v.pr);
-
-            vsChartInstance.data.labels = labels;
-            vsChartInstance.data.datasets[0].data = pulses;
-            vsChartInstance.data.datasets[1].data = temps;
+            vsChartInstance.data.labels = p.vitals.map(v => v.time + ' น.');
+            vsChartInstance.data.datasets[0].data = p.vitals.map(v => v.temp);
+            vsChartInstance.data.datasets[1].data = p.vitals.map(v => v.pr);
             vsChartInstance.update();
         }
     </script>
 </body>
 </html>
+
+```
