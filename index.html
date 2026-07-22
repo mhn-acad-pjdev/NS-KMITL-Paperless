@@ -1,25 +1,6 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyCH6kL6I0gJlTA8k0tC_vOgYU-VqsyEwwE",
-    authDomain: "ns-kmitl.firebaseapp.com",
-    projectId: "ns-kmitl",
-    storageBucket: "ns-kmitl.firebasestorage.app",
-    messagingSenderId: "425341920925",
-    appId: "1:425341920925:web:230ed9ab7eafb7894f5674"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบจำลอง IPD Paperless HIS, LIS & PACS - คณะพยาบาลศาสตร์ สจล.</title>
@@ -1544,6 +1525,55 @@
             vsChartInstance.update();
         }
     </script>
+    <script type="module">
+  // 1. Import โมดูลที่ต้องใช้จาก Firebase SDK
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { 
+    getFirestore, 
+    collection, 
+    addDoc, 
+    getDocs, 
+    onSnapshot 
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  // 2. ตั้งค่า Firebase Config ของคุณ
+  const firebaseConfig = {
+    apiKey: "AIzaSyCH6kL6I0gJlTA8k0tC_vOgYU-VqsyEwwE",
+    authDomain: "ns-kmitl.firebaseapp.com",
+    projectId: "ns-kmitl",
+    storageBucket: "ns-kmitl.firebasestorage.app",
+    messagingSenderId: "425341920925",
+    appId: "1:425341920925:web:230ed9ab7eafb7894f5674"
+  };
+
+  // 3. เริ่มต้นการทำงานของ Firebase และ Firestore
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // -------------------------------------------------------------
+  // ตัวอย่างฟังก์ชันสำหรับให้นักศึกษา "ส่งข้อมูล Focus Note (FDAR)" เข้าฐานข้อมูล
+  // -------------------------------------------------------------
+  async function saveFocusNote(patientId, focus, data, action, response) {
+    try {
+      const docRef = await addDoc(collection(db, "focus_notes"), {
+        patientId: patientId, // รหัสผู้ป่วย เช่น P001
+        focus: focus,         // ข้อวินิจฉัยทางการพยาบาล
+        data: data,           // D (Data)
+        action: action,       // A (Action)
+        response: response,   // R (Response)
+        createdAt: new Date() // เวลาที่บันทึก
+      });
+      console.log("บันทึกข้อมูลเรียบร้อย ID: ", docRef.id);
+      alert("บันทึกการพยาบาลเรียบร้อยแล้ว!");
+    } catch (e) {
+      console.error("เกิดข้อผิดพลาดในการบันทึก: ", e);
+    }
+  }
+
+  // ส่งฟังก์ชันออกไปให้ปุ่มในหน้า HTML เรียกใช้ได้
+  window.saveFocusNote = saveFocusNote;
+</script>
+
 </body>
 </html>
 
